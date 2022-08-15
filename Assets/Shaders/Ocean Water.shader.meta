@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 605276c71259a484cb7129b5df76501e
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures:
+  - _SeaFoam: {fileID: 2800000, guid: 6f3d5ccfd40199b439922068538e4e53, type: 3}
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
