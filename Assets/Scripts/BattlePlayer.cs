@@ -42,7 +42,13 @@ public class BattlePlayer : NetworkBehaviour
         GameObject overview = Instantiate(overviewController);
         overviewController = overview;
 
+        //TODO: find out why this doesnt work in playerinput
+
         playerInput.worldOverviewControl = overviewController.GetComponent<PawnController>();
+        playerInput.worldOverviewControl.TransitionToState(CharacterState.WorldOverview);
+        playerInput.camFollowPoint = playerInput.worldOverviewControl.transform;
+        playerInput.cam.SetFollowTransform(playerInput.camFollowPoint);
+
 
         if (NetworkManager.singleton is BattlegolfNetworkManager room && room.currentState == BattlegolfNetworkState.Battle)
         {

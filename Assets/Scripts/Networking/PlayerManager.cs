@@ -13,6 +13,7 @@ public class PlayerManager : NetworkBehaviour
     public string playerName;
 
     public BattlePlayer battlePlayer;
+    public NetworkIdentity identity;
 
     public LobbyPlayerUI lobbyUIObjectPrefab;
     public LobbyPlayerUI lobbyUIObject;
@@ -80,16 +81,30 @@ public class PlayerManager : NetworkBehaviour
     public override void OnStartServer()
     {
         playerName = (string)connectionToClient.authenticationData;
-
+        //TODO: probably move this into GameManager.cs
         if (NetworkManager.singleton is BattlegolfNetworkManager lobby)
         {
             if (lobby.currentState == BattlegolfNetworkState.Battle)
             {
-                Debug.Log("aassafsdfsdfds");
+                identity = GetComponent<NetworkIdentity>();
                 GameObject bp = Instantiate(lobby.spawnPrefabs[0]);
                 battlePlayer = bp.GetComponent<BattlePlayer>();
-                bp.GetComponent<BattlePlayer>().manager = this;
+                battlePlayer.manager = this;
+                battlePlayer.GetComponent<PlayerInput>().worldOverviewControl = battlePlayer.overviewController.GetComponent<PawnController>();
+                //battlePlayer.GetComponent<PlayerInput>().Initialize();
                 NetworkServer.Spawn(bp, this.gameObject);
+
+
+                for (int i = 0; i < GameManager.instance.numStartingPawns; i++)
+                {
+                    GameObject go = Instantiate(lobby.spawnPrefabs[1], GameManager.instance.worldGen.pawnSpawns[i], new Quaternion(0,0,0,0));
+                    Pawn pawn = go.GetComponent<Pawn>();
+                    battlePlayer.ownedPawns.Add(pawn);
+                    pawn.owner = battlePlayer;
+                    NetworkServer.Spawn(go, battlePlayer.gameObject);
+                }
+
+                lobby.players.RemoveAll(PlayerManager => PlayerManager == null);
             }
         }
     }
@@ -115,7 +130,8 @@ public class PlayerManager : NetworkBehaviour
         if (NetworkManager.singleton is BattlegolfNetworkManager lobby)
         {
             if (lobby.currentState == BattlegolfNetworkState.Battle)
-                Debug.Log("aassafsdfsdfds");
+            {
+            }
         }
     }
 

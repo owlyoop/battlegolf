@@ -89,32 +89,6 @@ public class BattlegolfNetworkManager : NetworkManager
         }
     }
 
-    public void SpawnBattlePlayers()
-    {
-        players.RemoveAll(item => item == null);
-        Debug.Log(NetworkServer.connections.Count);
-        foreach (var conn in NetworkServer.connections)
-        {
-            if (conn.Value.identity != null)
-            {
-                var player = conn.Value.identity.gameObject.GetComponent<PlayerManager>();
-                GameObject bp = Instantiate(spawnPrefabs[0]); //TODO: verify it is a battleplayer we are spawning
-                player.battlePlayer = bp.GetComponent<BattlePlayer>();
-                bp.GetComponent<BattlePlayer>().manager = player;
-                NetworkServer.Spawn(bp, player.GetComponent<NetworkIdentity>().connectionToServer);
-            }
-        }
-    }
-
-    public void SpawnPawns(BattlePlayer owner, int numPawnsPerPlayer)
-    {
-        for (int i = 0; i < numPawnsPerPlayer; i++)
-        {
-            GameObject go = Instantiate(spawnPrefabs[1]); //TODO: verify it is a pawn we are spawning
-
-        }
-    }
-
     /*
      *     [Command]
     public void CmdRegisterForEvent(EventType eventType)

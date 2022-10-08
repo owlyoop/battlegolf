@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Mirror;
 
 public struct PlayerActionInputs
 {
@@ -17,7 +18,7 @@ public struct PlayerActionInputs
     public bool OpenScoreboard; //`
 }
 
-public class PlayerInput : MonoBehaviour
+public class PlayerInput : NetworkBehaviour
 {
 
     public enum InputState
@@ -35,20 +36,26 @@ public class PlayerInput : MonoBehaviour
     private const string MouseScrollInput = "Mouse ScrollWheel";
     private const string HorizontalInput = "Horizontal";
     private const string VerticalInput = "Vertical";
-
-    [Header("References")]
+    
     PawnController currentControlledPawn;
-    public PawnController worldOverviewControl;
-    public Transform camFollowPoint;
     BattlePlayer player;
-    public CameraController cam;
     WorldGenerator worldGen;
     Material terrainInstanced;
+    NetworkIdentity identity;
+
+    [Header("References")]
+    public CameraSettings pawnCamSettings;
+    public CameraSettings overviewCamSettings;
+    public CameraSettings projectileCamSettings;
+    public CameraController cam;
+    public PawnController worldOverviewControl;
+    public Transform camFollowPoint;
     public Explosion explosionPrefab;
 
-    private void Start()
+    public override void OnStartClient()
     {
         player = GetComponent<BattlePlayer>();
+        identity = player.manager.identity;
         worldGen = FindObjectOfType<WorldGenerator>();
         terrainInstanced = worldGen.worldMaterial;
         Cursor.lockState = CursorLockMode.Locked;
@@ -57,25 +64,54 @@ public class PlayerInput : MonoBehaviour
         cam.SetFollowTransform(camFollowPoint);
 
         cam.IgnoredColliders.Clear();
-        //cam.IgnoredColliders.AddRange(currentControlledPawn.GetComponentsInChildren<Collider>());
         cam.IgnoredColliders.AddRange(worldOverviewControl.GetComponentsInChildren<Collider>());
 
         currentInputState = InputState.WorldOverview;
-        //inputState = InputState.ControllingPawn;
+        worldOverviewControl.TransitionToState(CharacterState.WorldOverview);
+        worldOverviewControl.IgnoredColliders.AddRange(worldGen.GetComponentsInChildren<Collider>());
+
+
+        SetCameraToWorldCenter();
+    }
+
+    public void Initialize()
+    {
+        player = GetComponent<BattlePlayer>();
+        identity = player.manager.identity;
+        worldGen = FindObjectOfType<WorldGenerator>();
+        terrainInstanced = worldGen.worldMaterial;
+        Cursor.lockState = CursorLockMode.Locked;
+
+        camFollowPoint = worldOverviewControl.transform;
+        cam.SetFollowTransform(camFollowPoint);
+
+        cam.IgnoredColliders.Clear();
+        cam.IgnoredColliders.AddRange(worldOverviewControl.GetComponentsInChildren<Collider>());
+
+        currentInputState = InputState.WorldOverview;
         worldOverviewControl.TransitionToState(CharacterState.WorldOverview);
         worldOverviewControl.IgnoredColliders.AddRange(worldGen.GetComponentsInChildren<Collider>());
 
         SetCameraToWorldCenter();
-
     }
 
     private void Update()
     {
-        HandlePlayerInput();
-        HandleCameraInput();
-        HandlePawnControllerInput();
-        CheckIfPawnCamObstructed();
+        if(identity != null && identity.isLocalPlayer)
+        {
+            HandlePlayerInput();
+            //HandleCameraInput();
+            HandlePawnControllerInput();
+            CheckIfPawnCamObstructed();
+        }
+    }
 
+    private void LateUpdate()
+    {
+        if (identity != null && identity.isLocalPlayer)
+        {
+            HandleCameraInput();
+        }
     }
 
     void SwitchInputState(InputState toState)
@@ -98,45 +134,33 @@ public class PlayerInput : MonoBehaviour
 
     void ChangeCameraConfig(InputState state)
     {
-        //TODO: DONT HARDCODE THIS
         switch (state)
         {
             case InputState.ControllingPawn:
-                cam.FollowPointFraming = new Vector2(1, 1.43f);
-                cam.MinDistance = 4;
-                cam.MaxDistance = 4;
-                cam.TargetDistance = 4;
-                cam.FollowingSharpness = 16;
-                cam.DistanceMovementSharpness = 8;
+                CopyCamSettings(pawnCamSettings, cam);
+                cam.SetFollowTransform(currentControlledPawn.transform);
                 break;
 
             case InputState.WorldOverview:
-                cam.FollowPointFraming = new Vector2(0, 1);
-                cam.MinDistance = 20;
-                cam.MaxDistance = 64;
-                cam.TargetDistance = 32;
-                cam.FollowingSharpness = 1000;
-                cam.DistanceMovementSharpness = 8f;
+                CopyCamSettings(overviewCamSettings, cam);
+                cam.SetFollowTransform(worldOverviewControl.CameraFollowPoint);
                 break;
 
             default:
                 break;
         }
-            
     }
 
-    private void Awake()
+    void CopyCamSettings(CameraSettings settings, CameraController cam)
     {
-        
-    }
+        cam.FollowPointFraming = settings.FollowPointFraming;
+        cam.MinDistance = settings.MinDistance;
+        cam.MaxDistance = settings.MaxDistance;
+        cam.TargetDistance = settings.TargetDistance;
+        cam.FollowingSharpness = settings.FollowSharpness;
+        cam.DistanceMovementSharpness = settings.DistanceMoveSharpness;
 
-    private void OnEnable()
-    {
-    }
-
-    private void OnDisable()
-    {
-    }
+    } 
 
     void SetCameraToWorldCenter()
     {
@@ -221,7 +245,6 @@ public class PlayerInput : MonoBehaviour
         {
             lookInputVector = Vector3.zero;
         }
-
         // Input for zooming the camera (disabled in WebGL because it can cause problems)
         float scrollInput = -Input.GetAxis(MouseScrollInput);
 

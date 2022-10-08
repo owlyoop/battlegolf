@@ -326,15 +326,17 @@ public class WorldGenerator : MonoBehaviour
                 for (int z = centerVoxel.gridPosition.z - rings; z < centerVoxel.gridPosition.z + rings + 1; z++)
                 {
                     if (x < 0 || y < 0 || z < 0 
-                        || x >= (numChunksWidth * MarchingCubesData.ChunkWidth) / voxelsPerMeter
-                        || y >= (numChunksHeight * MarchingCubesData.ChunkHeight) / voxelsPerMeter
-                        || z >= (numChunksLength * MarchingCubesData.ChunkWidth) / voxelsPerMeter)
+                        || x >= (numChunksWidth * MarchingCubesData.ChunkWidth) / 1
+                        || y >= (numChunksHeight * MarchingCubesData.ChunkHeight) / 1
+                        || z >= (numChunksLength * MarchingCubesData.ChunkWidth) / 1)
                     {
                         //out of bounds
 
                     }
                     else
                     {
+                        //var max = (numChunksWidth * MarchingCubesData.ChunkWidth) / 1;
+                        //Debug.Log($"{x} {y} {z} max is {max}");
                         var vox = voxels[x, y, z];
 
                         distanceFromCenter = Vector3.Distance(pos, vox.worldPosition);

@@ -61,8 +61,7 @@ public class GameManager : MonoBehaviour
     public void InitializeWorld()
     {
         worldGen.GenerateWorld();
-        lobby.SpawnBattlePlayers();
-        PopulateWorldWithPawns(players.Count, numStartingPawns);
+        //StartCoroutine(SpawnPlayers());
     }
 
     /*public Player GetPlayer(NetworkIdentity id)
@@ -81,40 +80,4 @@ public class GameManager : MonoBehaviour
 
         return foundPlayer;
     }*/
-
-    void SetActivePlayer(BattlePlayer player)
-    {
-
-    }
-
-    void PopulateWorldWithPawns(int numPlayers, int pawnsPerPlayer)
-    {
-        worldGen.GeneratePawnSpawnpoints(numPlayers * pawnsPerPlayer);
-
-        for (int n = 0; n < numPlayers; n++)
-        {
-            for (int p = 0; p < pawnsPerPlayer; p++)
-            {
-                Debug.Log(players.Count);
-                Debug.Log(players[n].ToString());
-                Debug.Log(worldGen.pawnSpawns[(n + 1 * p + 1) - 1]);
-                AddPawn(players[n], worldGen.pawnSpawns[(n+1 * p+1) - 1]);
-            }
-        }
-
-    }
-
-
-    void AddPawn(BattlePlayer owner, Vector3 position)
-    {
-        Debug.Log("pawn spawned");
-        GameObject go = Instantiate(pawnPrefab, position, Quaternion.identity);
-        Pawn pawn = go.GetComponent<Pawn>();
-
-        pawn.owner = owner;
-        owner.ownedPawns.Add(pawn);
-        owner.selectedPawn = pawn;
-
-        NetworkServer.Spawn(go);
-    }
 }
