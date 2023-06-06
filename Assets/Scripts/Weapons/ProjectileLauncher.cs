@@ -23,25 +23,31 @@ public class ProjectileLauncher : WeaponMotor
     {
         Disabled,
         WaitingForPrimaryFire,
-        ChoosingPower,
-        ChoosingCurve
+        ChoosingPower
     }
 
-    public WeaponState wepState;
+    WeaponState wepState;
 
     private void Start()
     {
         wepState = WeaponState.WaitingForPrimaryFire;
     }
 
+    //TODO: remake this
+    //the 2 ways power & curve could work would either be like mario golf, or ribbit king
+    //mario golf: vertical power bar. button press to build power. button press to stop building
+    //secondary bar fills up; you can adjust curve while it fills up
+    //
+    //ribbit king: horizontal bar. same as above, button press to start, button press to stop
+    //curve bar starts automatically. button press to stop.
+    //depending on how far left/right it stopped in relation to where the power stopped determines how much curve
     private void Update()
     {
-        
         if (wepState == WeaponState.ChoosingPower)
         {
             var t = Time.deltaTime;
 
-            shooter.owner.ui.projectileForce.SetText(projForce.ToString("0.00"));
+            shooter.owner.ui.ingameHUD.projectileForce.SetText(projForce.ToString("0.00"));
 
             if (forceIncreasing)
             {
@@ -56,26 +62,6 @@ public class ProjectileLauncher : WeaponMotor
                     forceIncreasing = true;
             }
         }
-
-        if (wepState == WeaponState.ChoosingCurve)
-        {
-            var t = Time.deltaTime;
-
-            shooter.owner.ui.projectileForce.SetText(projCurve.ToString("0.00"));
-
-            if (curveIncreasing)
-            {
-                projCurve += powerRate * t;
-                if (projCurve > 100)
-                    curveIncreasing = false;
-            }
-            else if (!curveIncreasing)
-            {
-                projCurve -= powerRate * t;
-                if (projCurve <= -100)
-                    curveIncreasing = true;
-            }
-        }
     }
 
     public override void PrimaryFire()
@@ -87,10 +73,6 @@ public class ProjectileLauncher : WeaponMotor
             wepState = WeaponState.ChoosingPower;
         }
         else if (wepState == WeaponState.ChoosingPower)
-        {
-            wepState = WeaponState.ChoosingCurve;
-        }
-        else if (wepState == WeaponState.ChoosingCurve)
         {
             FireProjectile();
         }
@@ -118,12 +100,7 @@ public class ProjectileLauncher : WeaponMotor
 
     public void FireProjectile()
     {
-        Projectile proj = Instantiate(projectilePrefab);
-        proj.transform.position = gunEnd.position;
-        proj.transform.rotation = gunEnd.rotation;
-        proj.shooter = weaponManager.GetPlayer().selectedPawn;
-        proj.Launch(this.transform.rotation, projForce / 100f, projCurve / 100f);
-
+        weaponManager.GetPlayer().networkCalls.CmdFireProjectile(2, gunEnd.position, gunEnd.rotation, projForce / 100f, projCurve / 100f, weaponManager.GetPlayer().selectedPawn.gameObject);
         wepState = WeaponState.WaitingForPrimaryFire;
 
         projForce = 0;

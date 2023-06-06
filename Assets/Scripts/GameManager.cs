@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
+public class GameManager : NetworkBehaviour
 {
     public static GameManager instance;
     public static GameManager GetInstance()
@@ -26,18 +26,20 @@ public class GameManager : MonoBehaviour
     public float turnLengthInSeconds = 45;
 
     [Header("Current Match Data")]
-    [SerializeField] List<BattlePlayer> players = new List<BattlePlayer>();
+    [SerializeField, SyncVar] List<BattlePlayer> players = new List<BattlePlayer>();
     public int turnCounter = 1;
     public float gameTimer;
     public Vector3 windDirection;
+    public GameState state;
 
-    BattlePlayer currentPlayersTurn;
-    BattlePlayer activePlayer;
+    [SyncVar]
+    public BattlePlayer currentPlayersTurn;
 
     [Header("References")]
     public WorldGenerator worldGen;
     public Transform worldCenterPoint;
     BattlegolfNetworkManager lobby;
+    public WorldNetworkCalls worldNetwork;
 
     [Header("Game Data")]
     public GameObject playerOverviewPrefab;
@@ -50,6 +52,8 @@ public class GameManager : MonoBehaviour
     {
         instance = this;
         worldGen = FindObjectOfType<WorldGenerator>();
+        worldNetwork = GetComponent<WorldNetworkCalls>();
+        worldNetwork.worldGen = worldGen;
     }
 
     private void Start()
@@ -58,26 +62,102 @@ public class GameManager : MonoBehaviour
             lobby = l;
     }
 
-    public void InitializeWorld()
+    private void OnEnable()
     {
-        worldGen.GenerateWorld();
-        //StartCoroutine(SpawnPlayers());
+        WorldGenerator.OnWorldGenerationComplete += WorldGenerationFinished;
     }
 
-    /*public Player GetPlayer(NetworkIdentity id)
+    private void OnDisable()
     {
-        Player foundPlayer = null;
-        if (NetworkManager.singleton is BattlegolfNetworkManager lobby)
-        {
-            foreach (var player in lobby.players)
-            {
-                if (id == player.netIdentity)
-                {
-                    foundPlayer = player.battlePlayerObj;
-                }
-            }
-        }
+        WorldGenerator.OnWorldGenerationComplete -= WorldGenerationFinished;
+    }
+    public void InitializeWorld(int numPlayers)
+    {
+        if (NetworkManager.singleton is BattlegolfNetworkManager l)
+            lobby = l;
+        state = GameState.WaitingForWorldGeneration;
+        worldGen.GenerateWorld(numPlayers * numStartingPawns);
+        
+    }
 
-        return foundPlayer;
-    }*/
+    public void ChangeGameState(GameState newState)
+    {
+        OnChangeFromState(state);
+        OnChangeToState(newState);
+    }
+
+    void WorldGenerationFinished()
+    {
+        Debug.Log("worldgen finished");
+    }
+
+    public void SpawnPlayer()
+    {
+
+    }
+
+    public void OnAllPlayersSpawned()
+    {
+        Debug.Log("all players spawned");
+        SetActivePlayer(players[0]);
+        ChangeGameState(GameState.PlayerSelectingPawn);
+    }
+
+    public void AddPlayer(BattlePlayer player)
+    {
+        players.Add(player);
+    }
+
+    void OnChangeFromState(GameState oldState)
+    {
+        switch(oldState)
+        {
+            case GameState.WaitingForWorldGeneration:
+                break;
+
+            case GameState.PlayerSelectingPawn:
+                break;
+
+            case GameState.PawnMoving:
+                break;
+
+            case GameState.PawnFiring:
+                break;
+
+            case GameState.FollowProjectile:
+                break;
+        }
+    }
+
+    void OnChangeToState(GameState newState)
+    {
+        switch(newState)
+        {
+            case GameState.WaitingForWorldGeneration:
+                break;
+
+            case GameState.PlayerSelectingPawn:
+                break;
+
+            case GameState.PawnMoving:
+                break;
+
+            case GameState.PawnFiring:
+                break;
+
+            case GameState.FollowProjectile:
+                break;
+        }
+    }
+
+    void SetActivePlayer(BattlePlayer player)
+    {
+        currentPlayersTurn = player;
+        player.OnStartTurn();
+    }
+
+    void EndTurn()
+    {
+        turnCounter++;
+    }
 }

@@ -1,6 +1,9 @@
+using KinematicCharacterController;
 using Mirror;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class PlayerManager : NetworkBehaviour
@@ -12,11 +15,12 @@ public class PlayerManager : NetworkBehaviour
     [SyncVar(hook = nameof(OnPlayerNameChanged))]
     public string playerName;
 
-    public BattlePlayer battlePlayer;
-    public NetworkIdentity identity;
-
-    public LobbyPlayerUI lobbyUIObjectPrefab;
-    public LobbyPlayerUI lobbyUIObject;
+    [Header("References")]
+    [SerializeField] private NetworkConnection connection;
+    [SerializeField] private LobbyPlayerUI lobbyUIObjectPrefab;
+    [SerializeField] private LobbyPlayerUI lobbyUIObject;
+    public BattlePlayer battlePlayer { get; private set; }
+    public NetworkIdentity identity { get; private set; }
 
     /// <summary>
     /// Diagnostic flag indicating whether this player is ready for the game to begin.
@@ -36,21 +40,27 @@ public class PlayerManager : NetworkBehaviour
 
     private void Start()
     {
-        if (NetworkManager.singleton is BattlegolfNetworkManager lobby)
-        {
-            bool alreadyInList = false;
-            foreach (var player in lobby.players)
-            {
-                if (player == this)
-                    alreadyInList = true;
-            }
+        identity = GetComponent<NetworkIdentity>();
+    }
 
-            if (!alreadyInList)
-                lobby.players.Add(this);
+    private void OnSpawned()
+    {
+
+    }
+
+    private void AddSelfToLobbyList(BattlegolfNetworkManager lobby)
+    {
+        bool alreadyInList = false;
+        foreach (var player in lobby.players)
+        {
+            if (player == this)
+                alreadyInList = true;
         }
 
-        else Debug.LogError("LobbyPlayer could not find a BattlegolfNetworkManager");
+        if (!alreadyInList)
+            lobby.players.Add(this);
     }
+
 
     void OnPlayerNameChanged(string _, string newName)
     {
@@ -80,33 +90,8 @@ public class PlayerManager : NetworkBehaviour
 
     public override void OnStartServer()
     {
+        base.OnStartServer();
         playerName = (string)connectionToClient.authenticationData;
-        //TODO: probably move this into GameManager.cs
-        if (NetworkManager.singleton is BattlegolfNetworkManager lobby)
-        {
-            if (lobby.currentState == BattlegolfNetworkState.Battle)
-            {
-                identity = GetComponent<NetworkIdentity>();
-                GameObject bp = Instantiate(lobby.spawnPrefabs[0]);
-                battlePlayer = bp.GetComponent<BattlePlayer>();
-                battlePlayer.manager = this;
-                battlePlayer.GetComponent<PlayerInput>().worldOverviewControl = battlePlayer.overviewController.GetComponent<PawnController>();
-                //battlePlayer.GetComponent<PlayerInput>().Initialize();
-                NetworkServer.Spawn(bp, this.gameObject);
-
-
-                for (int i = 0; i < GameManager.instance.numStartingPawns; i++)
-                {
-                    GameObject go = Instantiate(lobby.spawnPrefabs[1], GameManager.instance.worldGen.pawnSpawns[i], new Quaternion(0,0,0,0));
-                    Pawn pawn = go.GetComponent<Pawn>();
-                    battlePlayer.ownedPawns.Add(pawn);
-                    pawn.owner = battlePlayer;
-                    NetworkServer.Spawn(go, battlePlayer.gameObject);
-                }
-
-                lobby.players.RemoveAll(PlayerManager => PlayerManager == null);
-            }
-        }
     }
 
     /// <summary>
@@ -127,11 +112,40 @@ public class PlayerManager : NetworkBehaviour
             OnPlayerReadyStatusChanged.Invoke(false);
         }
 
+        //TODO: this is a fucking mess
         if (NetworkManager.singleton is BattlegolfNetworkManager lobby)
         {
+            AddSelfToLobbyList(lobby);
+
+            //Spawn the battleplayer
             if (lobby.currentState == BattlegolfNetworkState.Battle)
             {
+                GameObject bp = Instantiate(lobby.GetBattleplayerPrefab());
+                bp.GetComponent<BattlePlayer>().SetManager(this);
+                NetworkServer.Spawn(bp, this.gameObject);
+                bp.GetComponent<BattlePlayer>().OnNetworkSpawn();
+
+                lobby.NumSpawnedPlayers++;
+
+                //Spawn the battleplayer's pawns
+                for (int i = 0; i < GameManager.instance.numStartingPawns; i++)
+                {
+                    GameObject go = Instantiate(lobby.GetPawnPrefab(),
+                        GameManager.instance.worldGen.pawnSpawns[i + ((lobby.NumSpawnedPlayers - 1) * GameManager.instance.numStartingPawns)],
+                        new Quaternion(0, 0, 0, 0));
+                    go.GetComponent<Pawn>().SetOwner(bp.GetComponent<BattlePlayer>());
+                    NetworkServer.Spawn(go, this.gameObject);
+                }
+
+                GameManager.instance.AddPlayer(bp.GetComponent<BattlePlayer>());
+
+                //TODO: this shouldnt be in a player start function
+                if (lobby.NumSpawnedPlayers == NetworkServer.connections.Count)
+                {
+                    GameManager.instance.OnAllPlayersSpawned();
+                }
             }
+            else Debug.Log("LobbyPlayer could not find a BattlegolfNetworkManager");
         }
     }
 
@@ -148,6 +162,6 @@ public class PlayerManager : NetworkBehaviour
 
     public override void OnStartLocalPlayer()
     {
-        base.OnStartLocalPlayer();
+        
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Mirror;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -51,6 +52,7 @@ public class WorldGenerator : MonoBehaviour
     public static event WorldGenerationCompleted OnWorldGenerationComplete;
 
     GameObject floorMesh;
+    public DCGameManager dc;
 
 
     private void Start()
@@ -118,6 +120,12 @@ public class WorldGenerator : MonoBehaviour
                 numChunksHeight * MarchingCubesData.ChunkHeight * (1f / voxelsPerMeter) / 2f,
                 numChunksLength * MarchingCubesData.ChunkWidth * (1f / voxelsPerMeter) / 2f);
         }
+    }
+
+    void GenerateDualContouring()
+    {
+        DestroyWorldInEditor();
+        //dc.Generate();
     }
 
     /// <summary>
@@ -301,6 +309,7 @@ public class WorldGenerator : MonoBehaviour
         }
         
     }
+
     
     /// <summary>
     /// Alters the terrain values in a sphere from a given world position.
@@ -378,13 +387,18 @@ public class WorldGenerator : MonoBehaviour
     /// <summary>
     /// The main function to generate the world from scratch
     /// </summary>
-    public void GenerateWorld()
+    public void GenerateWorld(int numStartingPawns)
     {
         Initialize();
-        Generate();
+
+        if (!useDualContouring)
+            Generate();
+        else
+            GenerateDualContouring();
+
         if (Application.isPlaying)
         {
-            GeneratePawnSpawnpoints(8);
+            GeneratePawnSpawnpoints(numStartingPawns);
             if (OnWorldGenerationComplete != null)
             {
                 OnWorldGenerationComplete();
@@ -447,6 +461,9 @@ public class WorldGenerator : MonoBehaviour
                         {
                             validSpawn = true;
                             validSpawns.Add(worldPos);
+                            GameObject spawn = new GameObject();
+                            spawn.transform.position = worldPos;
+                            spawn.AddComponent<NetworkStartPosition>();
                         }
                         else
                         {
@@ -486,6 +503,11 @@ public class WorldGenerator : MonoBehaviour
             go.GetComponent<Collider>().enabled = false;
         }
     }
+
+    //Networking
+    #region
+    
+    #endregion
 
     //Trash I don't need but might want to look back for reference
     #region

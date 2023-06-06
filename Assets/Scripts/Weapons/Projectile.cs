@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Mirror;
 
-public class Projectile : MonoBehaviour
+public class Projectile : NetworkBehaviour
 {
     BattlePlayer owner;
 
@@ -42,7 +43,7 @@ public class Projectile : MonoBehaviour
         prevPos = transform.position;
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         UpdateVelocity();
     }
@@ -53,7 +54,10 @@ public class Projectile : MonoBehaviour
         if (Physics.Raycast(prevPos, rb.velocity.normalized, out hit, 0.4f, 1 << LayerMask.NameToLayer("World Geometry")))
         {
             //Debug.Log("Raycast hit! Projectile explosion position: " + this.transform.position + " prevpos" + prevPos);
-            GameManager.GetInstance().worldGen.AlterTerrainRadius(this.transform.position, true, 1, 5, explosionPrefab);
+            if (shooter.owner != null && shooter.owner.isServer)
+            {
+                GameManager.GetInstance().worldNetwork.RpcAlterTerrainRadius(this.transform.position, true, 1, 5);
+            }
             Kill();
         }
         prevPos = transform.position;
@@ -64,7 +68,7 @@ public class Projectile : MonoBehaviour
         var t = Time.deltaTime;
 
         //TODO: add a cap on how many degrees it can turn
-        //make the rotation start out slower
+        //make the curve behave like curve in a golf game. gotta research that
 
         rb.velocity = Quaternion.Euler(0, (maxCurve * curveMultiplier) * t, 0) * rb.velocity;
 
@@ -88,7 +92,11 @@ public class Projectile : MonoBehaviour
         if (col.gameObject.layer == 6 || col.gameObject.layer == 10)
         {
             //-Debug.Log("Projectile explosion position: " + this.transform.position);
-            GameManager.GetInstance().worldGen.AlterTerrainRadius(this.transform.position, true, 1, 5, explosionPrefab);
+            //GameManager.GetInstance().worldGen.AlterTerrainRadius(this.transform.position, true, 1, 5, explosionPrefab);
+            if (shooter.owner != null && shooter.owner.isServer)
+            {
+                GameManager.GetInstance().worldNetwork.RpcAlterTerrainRadius(this.transform.position, true, 1, 5);
+            }
             Kill();
         }
     }

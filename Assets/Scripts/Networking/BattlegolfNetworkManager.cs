@@ -21,9 +21,16 @@ public class BattlegolfNetworkManager : NetworkManager
     public BattlegolfNetworkState currentState = BattlegolfNetworkState.Lobby;
 
     [Scene]
-    public string mainGameScene = "";
+    [SerializeField] private string mainGameScene = "";
 
     public List<PlayerManager> players = new List<PlayerManager>();
+
+    private int numSpawnedPlayers;
+    public int NumSpawnedPlayers
+    {
+        get { return numSpawnedPlayers; }
+        set { numSpawnedPlayers = value; }
+    }
 
     /// <summary>
     /// True when all players have submitted a Ready message
@@ -83,20 +90,12 @@ public class BattlegolfNetworkManager : NetworkManager
                 {
                     currentState = BattlegolfNetworkState.Battle;
                     ServerChangeScene(mainGameScene);
+                    numSpawnedPlayers = 0;
                 }
                 return;
             }
         }
     }
-
-    /*
-     *     [Command]
-    public void CmdRegisterForEvent(EventType eventType)
-    {
-        EventManager.Instance().RegisterPlayerForEvent(eventType, this);
-    }
-
-     */
 
     #region Unity Callbacks
 
@@ -121,6 +120,7 @@ public class BattlegolfNetworkManager : NetworkManager
     public override void Start()
     {
         //singleton = this;
+        numSpawnedPlayers = 0;
         base.Start();
     }
 
@@ -161,6 +161,7 @@ public class BattlegolfNetworkManager : NetworkManager
         base.OnApplicationQuit();
     }
 
+
     #endregion
 
     #region Scene Management
@@ -192,8 +193,6 @@ public class BattlegolfNetworkManager : NetworkManager
     public override void OnServerSceneChanged(string sceneName) 
     {
         base.OnServerSceneChanged(sceneName);
-        if (GameManager.GetInstance() != null)
-            GameManager.GetInstance().InitializeWorld();
     }
 
     /// <summary>
@@ -214,6 +213,11 @@ public class BattlegolfNetworkManager : NetworkManager
     /// </summary>
     public override void OnClientSceneChanged()
     {
+        if (GameManager.GetInstance() != null)
+        {
+            GameManager.GetInstance().InitializeWorld(players.Count);
+        }
+        ClearDuplicatesInLobbyList();
         base.OnClientSceneChanged();
     }
 
@@ -349,5 +353,41 @@ public class BattlegolfNetworkManager : NetworkManager
 
     #endregion
 
+    public void ClearDuplicatesInLobbyList()
+    {
+        players.RemoveAll(PlayerManager => PlayerManager == null);
+    }
+
+    public GameObject GetBattleplayerPrefab()
+    {
+        GameObject bpPrefab = null;
+        foreach (var prefab in spawnPrefabs)
+        {
+            if (prefab.gameObject.name == "BattlePlayer")
+            {
+                bpPrefab = prefab;
+            }
+        }
+        if (bpPrefab == null)
+            Debug.LogError("Cannot find the network spawnable prefab in the networkmanager");
+
+        return bpPrefab;
+    }
+
+    public GameObject GetPawnPrefab()
+    {
+        GameObject pawnPrefab = null;
+        foreach (var prefab in spawnPrefabs)
+        {
+            if (prefab.gameObject.name == "Pawn")
+            {
+                pawnPrefab = prefab;
+            }
+        }
+        if (pawnPrefab == null)
+            Debug.LogError("Cannot find the network spawnable prefab in the networkmanager");
+
+        return pawnPrefab;
+    }
 
 }

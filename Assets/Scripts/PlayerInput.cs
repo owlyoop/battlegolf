@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using System.IO;
 
 public struct PlayerActionInputs
 {
@@ -9,9 +10,12 @@ public struct PlayerActionInputs
     public bool SecondaryFire; // default mouse2
     public bool Interact; // default f
 
-    public bool NextPawn; //r
+    public bool ToggleWorldOverview; //r
 
-    public bool Confirm; // e
+    public bool Confirm; //enter?
+
+    public bool Left; // a
+    public bool Right; // d
 
     public bool OpenMainMenu; //esc
     public bool OpenWeaponMenu; //tab
@@ -25,8 +29,11 @@ public class PlayerInput : NetworkBehaviour
     {
         WorldOverview,
         ControllingPawn,
+        SelectingPawn,
+        Spectating,
         None
     }
+
     InputState currentInputState;
 
     public float worldCameraSpeed = 2f;
@@ -37,70 +44,70 @@ public class PlayerInput : NetworkBehaviour
     private const string HorizontalInput = "Horizontal";
     private const string VerticalInput = "Vertical";
     
+
+    public CameraSettings pawnCamSettings;
+    public CameraSettings overviewCamSettings;
+    public CameraSettings selectingPawnCamSettings;
+    public CameraSettings projectileCamSettings;
+    public Explosion explosionPrefab;
+
     PawnController currentControlledPawn;
     BattlePlayer player;
     WorldGenerator worldGen;
-    Material terrainInstanced;
-    NetworkIdentity identity;
+    CameraController cam;
+    public PawnController worldOverviewControl { get; private set; }
 
-    [Header("References")]
-    public CameraSettings pawnCamSettings;
-    public CameraSettings overviewCamSettings;
-    public CameraSettings projectileCamSettings;
-    public CameraController cam;
-    public PawnController worldOverviewControl;
-    public Transform camFollowPoint;
-    public Explosion explosionPrefab;
+    public delegate void SelectingPawnWorldOverviewToggle();
+    public static event SelectingPawnWorldOverviewToggle OnSelectingPawnWorldOverviewToggle;
 
-    public override void OnStartClient()
+    public delegate void SelectingPawnConfirm();
+    public static event SelectingPawnConfirm OnSelectingPawnWorldConfirm;
+
+    private void Start()
     {
         player = GetComponent<BattlePlayer>();
-        identity = player.manager.identity;
-        worldGen = FindObjectOfType<WorldGenerator>();
-        terrainInstanced = worldGen.worldMaterial;
-        Cursor.lockState = CursorLockMode.Locked;
+        cam = GetComponent<CameraController>();
+        if (player.manager != null && player.manager.identity != null && player.manager.identity.hasAuthority)
+        {
+            worldGen = FindObjectOfType<WorldGenerator>();
+            Cursor.lockState = CursorLockMode.Locked;
 
-        camFollowPoint = worldOverviewControl.transform;
-        cam.SetFollowTransform(camFollowPoint);
+            //camFollowPoint = worldOverviewControl.transform;
+            //cam.SetFollowTransform(camFollowPoint);
 
-        cam.IgnoredColliders.Clear();
-        cam.IgnoredColliders.AddRange(worldOverviewControl.GetComponentsInChildren<Collider>());
+            cam.IgnoredColliders.Clear();
+            cam.IgnoredColliders.AddRange(worldOverviewControl.GetComponentsInChildren<Collider>());
 
-        currentInputState = InputState.WorldOverview;
-        worldOverviewControl.TransitionToState(CharacterState.WorldOverview);
-        worldOverviewControl.IgnoredColliders.AddRange(worldGen.GetComponentsInChildren<Collider>());
+            
+            worldOverviewControl.TransitionToState(CharacterState.WorldOverview);
+            worldOverviewControl.IgnoredColliders.AddRange(worldGen.GetComponentsInChildren<Collider>());
 
 
-        SetCameraToWorldCenter();
+            SetCameraToWorldCenter();
+            SwitchInputState(InputState.SelectingPawn);
+        }
     }
 
-    public void Initialize()
+    public void SetOverviewController(PawnController controller)
     {
-        player = GetComponent<BattlePlayer>();
-        identity = player.manager.identity;
-        worldGen = FindObjectOfType<WorldGenerator>();
-        terrainInstanced = worldGen.worldMaterial;
-        Cursor.lockState = CursorLockMode.Locked;
+        worldOverviewControl = controller;
+    }
 
-        camFollowPoint = worldOverviewControl.transform;
-        cam.SetFollowTransform(camFollowPoint);
+    private void OnEnable()
+    {
+        WorldGenerator.OnWorldGenerationComplete += WorldGenFinished;
+    }
 
-        cam.IgnoredColliders.Clear();
-        cam.IgnoredColliders.AddRange(worldOverviewControl.GetComponentsInChildren<Collider>());
-
-        currentInputState = InputState.WorldOverview;
-        worldOverviewControl.TransitionToState(CharacterState.WorldOverview);
-        worldOverviewControl.IgnoredColliders.AddRange(worldGen.GetComponentsInChildren<Collider>());
-
-        SetCameraToWorldCenter();
+    private void OnDisable()
+    {
+        WorldGenerator.OnWorldGenerationComplete -= WorldGenFinished;
     }
 
     private void Update()
     {
-        if(identity != null && identity.isLocalPlayer)
+        if(player.manager != null && player.manager.identity != null && player.manager.identity.hasAuthority)
         {
             HandlePlayerInput();
-            //HandleCameraInput();
             HandlePawnControllerInput();
             CheckIfPawnCamObstructed();
         }
@@ -108,28 +115,51 @@ public class PlayerInput : NetworkBehaviour
 
     private void LateUpdate()
     {
-        if (identity != null && identity.isLocalPlayer)
+        if (player.manager != null && player.manager.identity != null && player.manager.identity.hasAuthority)
         {
             HandleCameraInput();
         }
     }
 
+
+    public void WorldGenFinished()
+    {
+        SwitchInputState(InputState.SelectingPawn);
+    }
+
+    public InputState GetCurrentInputState()
+    {
+        return currentInputState;
+    }
+
     void SwitchInputState(InputState toState)
     {
+        currentInputState = toState;
         switch (toState)
         {
             case InputState.WorldOverview:
-
+                currentControlledPawn = worldOverviewControl;
+                ChangeCameraConfig(InputState.WorldOverview);
                 break;
 
             case InputState.ControllingPawn:
+                if (player.selectedPawn == null)
+                {
+                    player.SelectPawnByIndex(0);
+                }
+                currentControlledPawn = player.selectedPawn.controller;
+                ChangeCameraConfig(InputState.ControllingPawn);
+                break;
 
+            case InputState.SelectingPawn:
+                currentControlledPawn = worldOverviewControl;
+                ChangeCameraConfig(InputState.SelectingPawn);
                 break;
 
             default:
-
                 break;
         }
+
     }
 
     void ChangeCameraConfig(InputState state)
@@ -146,11 +176,15 @@ public class PlayerInput : NetworkBehaviour
                 cam.SetFollowTransform(worldOverviewControl.CameraFollowPoint);
                 break;
 
+            case InputState.SelectingPawn:
+                CopyCamSettings(selectingPawnCamSettings, cam);
+                if(player.ownedPawns != null && player.ownedPawns.Count > 0)
+                    cam.SetFollowTransform(player.ownedPawns[player.GetSelectedPawnIndex()].transform);
+                break;
             default:
                 break;
         }
     }
-
     void CopyCamSettings(CameraSettings settings, CameraController cam)
     {
         cam.FollowPointFraming = settings.FollowPointFraming;
@@ -159,7 +193,6 @@ public class PlayerInput : NetworkBehaviour
         cam.TargetDistance = settings.TargetDistance;
         cam.FollowingSharpness = settings.FollowSharpness;
         cam.DistanceMovementSharpness = settings.DistanceMoveSharpness;
-
     } 
 
     void SetCameraToWorldCenter()
@@ -192,13 +225,16 @@ public class PlayerInput : NetworkBehaviour
 
     void HandlePlayerInput()
     {
+        //TODO: Organize this
         PlayerActionInputs playerInputs = new PlayerActionInputs();
 
         playerInputs.PrimaryFire = Input.GetMouseButtonDown(0);
         playerInputs.SecondaryFire = Input.GetMouseButtonDown(1);
         playerInputs.Interact = Input.GetKeyDown(KeyCode.F);
-        playerInputs.NextPawn = Input.GetKeyDown(KeyCode.R);
-        playerInputs.Confirm = Input.GetKeyDown(KeyCode.E);
+        playerInputs.ToggleWorldOverview = Input.GetKeyDown(KeyCode.R);
+        playerInputs.Confirm = Input.GetKeyDown(KeyCode.Return);
+        playerInputs.Left = Input.GetKeyDown(KeyCode.A);
+        playerInputs.Right = Input.GetKeyDown(KeyCode.D);
         playerInputs.OpenMainMenu = Input.GetKeyDown(KeyCode.Escape);
         playerInputs.OpenScoreboard = Input.GetKeyDown(KeyCode.Tilde);
         playerInputs.OpenWeaponMenu = Input.GetKeyDown(KeyCode.Tab);
@@ -211,6 +247,50 @@ public class PlayerInput : NetworkBehaviour
             }
         }
 
+        bool skip = false;
+        if(currentInputState == InputState.SelectingPawn)
+        {
+            if (playerInputs.Left == true)
+            {
+                player.SelectPreviousPawn();
+            }
+            if (playerInputs.Right == true)
+            {
+                player.SelectNextPawn();
+            }
+            if(playerInputs.Confirm == true)
+            {
+                SwitchInputState(InputState.ControllingPawn);
+                if(OnSelectingPawnWorldConfirm != null)
+                {
+                    OnSelectingPawnWorldConfirm();
+                }
+
+            }
+            if (playerInputs.ToggleWorldOverview == true)
+            {
+                SwitchInputState(InputState.WorldOverview);
+                if(OnSelectingPawnWorldOverviewToggle != null)
+                {
+                    OnSelectingPawnWorldOverviewToggle();
+                }
+                skip = true;
+            }
+        }
+
+        if(currentInputState == InputState.WorldOverview)
+        {
+            if (playerInputs.ToggleWorldOverview == true && !skip)
+            {
+                SwitchInputState(InputState.SelectingPawn);
+                if (OnSelectingPawnWorldOverviewToggle != null)
+                {
+                    OnSelectingPawnWorldOverviewToggle();
+                }
+            }
+        }
+        skip = false;
+
         if (Input.GetKey(KeyCode.C))
         {
             Ray ray = new Ray(cam.transform.position, cam.transform.forward);
@@ -218,19 +298,6 @@ public class PlayerInput : NetworkBehaviour
             {
                 worldGen.AlterTerrainRadius(hit.point, false, 0.024f, 5f, explosionPrefab);
             }
-        }
-
-        if (playerInputs.NextPawn == true)
-        {
-            player.SelectNextPawn();
-            currentInputState = InputState.ControllingPawn;
-            currentControlledPawn = player.selectedPawn.controller;
-            ChangeCameraConfig(InputState.ControllingPawn);
-        }
-
-        if (playerInputs.OpenWeaponMenu == true)
-        {
-
         }
     }
 

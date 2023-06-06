@@ -15,12 +15,13 @@ public class UIManager : MonoBehaviour
 {
     [Header("References")]
     public BattlePlayer player;
+    public IngameHUD ingameHUD;
     public GridLayoutGroup weaponGrid;
     public GameObject weaponIconPrefab;
     public GameObject teamHealthbarPrefab;
     public GameObject projectileLauncherHUD;
 
-    public TextMeshProUGUI projectileForce;
+    
 
 
     private void Start()

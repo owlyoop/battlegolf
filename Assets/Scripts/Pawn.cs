@@ -1,9 +1,11 @@
+using KinematicCharacterController;
+using Mirror;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 //Pawns represent little controllable characters in the game world. They do not represent the player. A player can control multiple pawns.
-public class Pawn : MonoBehaviour
+public class Pawn : NetworkBehaviour
 {
     public enum InputState
     {
@@ -12,7 +14,9 @@ public class Pawn : MonoBehaviour
         Firing
     }
 
+    [SyncVar]
     public BattlePlayer owner;
+
     public Collider col;
     public PawnController controller;
 
@@ -25,30 +29,32 @@ public class Pawn : MonoBehaviour
 
     public bool isSelected;
 
+    [SyncVar]
+    public uint IdOfBattlePlayer;
+
     private void Start()
     {
-        controller = GetComponent<PawnController>();
-        weaponManager = owner.weaponManager;
+        if (owner != null && owner.manager != null)
+        {
+            if(owner.manager.isLocalPlayer)
+            {
+                controller = GetComponent<PawnController>();
+                weaponManager = owner.weaponManager;
+            }
+        }
     }
 
     //TODO: implement
-    void Initialize(BattlePlayer owner)
+    public void SetOwner(BattlePlayer owner)
     {
+        owner.ownedPawns.Add(this);
+        this.owner = owner;
         
     }
 
-    private void OnEnable()
-    {
-    }
-
-    private void OnDisable()
-    {
-    }
-
-
     private void LateUpdate()
     {
-        if (isSelected)
+        if (isSelected && owner.manager.isLocalPlayer)
         {
             weaponParent.rotation = owner.cam.transform.rotation;
         }
