@@ -1,0 +1,19 @@
+{
+    "diffEditor.codeLens": true,
+    "javascript.referencesCodeLens.enabled": true,
+    "javascript.referencesCodeLens.showOnAllFunctions": true,
+    "typescript.implementationsCodeLens.enabled": true,
+    "typescript.referencesCodeLens.enabled": true,
+    "typescript.referencesCodeLens.showOnAllFunctions": true,
+    "csharp.inlayHints.parameters.enabled": true,
+    "csharp.inlayHints.parameters.forOtherParameters": false,
+    "csharp.inlayHints.parameters.forObjectCreationParameters": false,
+    "csharp.inlayHints.parameters.forLiteralParameters": false,
+    "csharp.inlayHints.parameters.suppressForParametersThatDifferOnlyBySuffix": false,
+    "csharp.inlayHints.parameters.suppressForParametersThatMatchArgumentName": false,
+    "csharp.inlayHints.types.enabled": false,
+    "csharp.inlayHints.types.forImplicitVariableTypes": false,
+    "csharp.inlayHints.types.forImplicitObjectCreation": false,
+    "csharp.inlayHints.types.forLambdaParameterTypes": false,
+    "csharp.inlayHints.parameters.forIndexerParameters": false
+}
