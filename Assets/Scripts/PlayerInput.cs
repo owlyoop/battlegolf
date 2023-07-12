@@ -1,8 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using Mirror;
 using UnityEngine;
-using Mirror;
-using System.IO;
 
 public struct PlayerActionInputs
 {
@@ -45,17 +42,17 @@ public class PlayerInput : NetworkBehaviour
     private const string VerticalInput = "Vertical";
     
 
-    public CameraSettings pawnCamSettings;
-    public CameraSettings overviewCamSettings;
-    public CameraSettings selectingPawnCamSettings;
-    public CameraSettings projectileCamSettings;
-    public Explosion explosionPrefab;
+    public CameraSettings PawnCamSettings;
+    public CameraSettings OverviewCamSettings;
+    public CameraSettings SelectingPawnCamSettings;
+    public CameraSettings ProjectileCamSettings;
+    public Explosion ExplosionPrefab;
 
     PawnController currentControlledPawn;
     BattlePlayer player;
     WorldGenerator worldGen;
     CameraController cam;
-    public PawnController worldOverviewControl { get; private set; }
+    public PawnController WorldOverviewControl { get; private set; }
 
     public delegate void SelectingPawnWorldOverviewToggle();
     public static event SelectingPawnWorldOverviewToggle OnSelectingPawnWorldOverviewToggle;
@@ -67,7 +64,7 @@ public class PlayerInput : NetworkBehaviour
     {
         player = GetComponent<BattlePlayer>();
         cam = GetComponent<CameraController>();
-        if (player.manager != null && player.manager.identity != null && player.manager.identity.hasAuthority)
+        if (player.Manager != null && player.Manager.Identity != null && player.Manager.Identity.hasAuthority)
         {
             worldGen = FindObjectOfType<WorldGenerator>();
             Cursor.lockState = CursorLockMode.Locked;
@@ -76,11 +73,11 @@ public class PlayerInput : NetworkBehaviour
             //cam.SetFollowTransform(camFollowPoint);
 
             cam.IgnoredColliders.Clear();
-            cam.IgnoredColliders.AddRange(worldOverviewControl.GetComponentsInChildren<Collider>());
+            cam.IgnoredColliders.AddRange(WorldOverviewControl.GetComponentsInChildren<Collider>());
 
             
-            worldOverviewControl.TransitionToState(CharacterState.WorldOverview);
-            worldOverviewControl.IgnoredColliders.AddRange(worldGen.GetComponentsInChildren<Collider>());
+            WorldOverviewControl.TransitionToState(CharacterState.WorldOverview);
+            WorldOverviewControl.IgnoredColliders.AddRange(worldGen.GetComponentsInChildren<Collider>());
 
 
             SetCameraToWorldCenter();
@@ -90,7 +87,7 @@ public class PlayerInput : NetworkBehaviour
 
     public void SetOverviewController(PawnController controller)
     {
-        worldOverviewControl = controller;
+        WorldOverviewControl = controller;
     }
 
     private void OnEnable()
@@ -105,7 +102,7 @@ public class PlayerInput : NetworkBehaviour
 
     private void Update()
     {
-        if(player.manager != null && player.manager.identity != null && player.manager.identity.hasAuthority)
+        if(player.Manager != null && player.Manager.Identity != null && player.Manager.Identity.hasAuthority)
         {
             HandlePlayerInput();
             HandlePawnControllerInput();
@@ -115,7 +112,7 @@ public class PlayerInput : NetworkBehaviour
 
     private void LateUpdate()
     {
-        if (player.manager != null && player.manager.identity != null && player.manager.identity.hasAuthority)
+        if (player.Manager != null && player.Manager.Identity != null && player.Manager.Identity.hasAuthority)
         {
             HandleCameraInput();
         }
@@ -138,21 +135,21 @@ public class PlayerInput : NetworkBehaviour
         switch (toState)
         {
             case InputState.WorldOverview:
-                currentControlledPawn = worldOverviewControl;
+                currentControlledPawn = WorldOverviewControl;
                 ChangeCameraConfig(InputState.WorldOverview);
                 break;
 
             case InputState.ControllingPawn:
-                if (player.selectedPawn == null)
+                if (player.SelectedPawn == null)
                 {
                     player.SelectPawnByIndex(0);
                 }
-                currentControlledPawn = player.selectedPawn.controller;
+                currentControlledPawn = player.SelectedPawn.Controller;
                 ChangeCameraConfig(InputState.ControllingPawn);
                 break;
 
             case InputState.SelectingPawn:
-                currentControlledPawn = worldOverviewControl;
+                currentControlledPawn = WorldOverviewControl;
                 ChangeCameraConfig(InputState.SelectingPawn);
                 break;
 
@@ -167,19 +164,19 @@ public class PlayerInput : NetworkBehaviour
         switch (state)
         {
             case InputState.ControllingPawn:
-                CopyCamSettings(pawnCamSettings, cam);
+                CopyCamSettings(PawnCamSettings, cam);
                 cam.SetFollowTransform(currentControlledPawn.transform);
                 break;
 
             case InputState.WorldOverview:
-                CopyCamSettings(overviewCamSettings, cam);
-                cam.SetFollowTransform(worldOverviewControl.CameraFollowPoint);
+                CopyCamSettings(OverviewCamSettings, cam);
+                cam.SetFollowTransform(WorldOverviewControl.CameraFollowPoint);
                 break;
 
             case InputState.SelectingPawn:
-                CopyCamSettings(selectingPawnCamSettings, cam);
-                if(player.ownedPawns != null && player.ownedPawns.Count > 0)
-                    cam.SetFollowTransform(player.ownedPawns[player.GetSelectedPawnIndex()].transform);
+                CopyCamSettings(SelectingPawnCamSettings, cam);
+                if(player.OwnedPawns != null && player.OwnedPawns.Count > 0)
+                    cam.SetFollowTransform(player.OwnedPawns[player.GetSelectedPawnIndex()].transform);
                 break;
             default:
                 break;
@@ -197,7 +194,7 @@ public class PlayerInput : NetworkBehaviour
 
     void SetCameraToWorldCenter()
     {
-        worldOverviewControl.Motor.MoveCharacter(GameManager.GetInstance().worldCenterPoint.position);
+        WorldOverviewControl.Motor.MoveCharacter(GameManager.GetInstance().WorldCenterPoint.position);
     }
 
     void HandlePawnControllerInput()
@@ -219,7 +216,7 @@ public class PlayerInput : NetworkBehaviour
         }
         else if (currentInputState == InputState.WorldOverview)
         {
-            worldOverviewControl.SetInputs(ref pawnInputs);
+            WorldOverviewControl.SetInputs(ref pawnInputs);
         }
     }
 
@@ -296,7 +293,7 @@ public class PlayerInput : NetworkBehaviour
             Ray ray = new Ray(cam.transform.position, cam.transform.forward);
             if (Physics.Raycast(ray, out RaycastHit hit, 1000f))
             {
-                worldGen.AlterTerrainRadius(hit.point, false, 0.024f, 5f, explosionPrefab);
+                worldGen.AlterTerrainRadius(hit.point, false, 0.024f, 5f, ExplosionPrefab);
             }
         }
     }
@@ -335,13 +332,13 @@ public class PlayerInput : NetworkBehaviour
                 //this may look backwards. and it is. but i dont know why doing it normally doesnt do what i want. oh well!
                 if (hit.collider.gameObject.layer == 10)
                 {
-                    if (worldGen.worldMaterial.IsKeywordEnabled("_MASKENABLED_ON"))
-                        worldGen.worldMaterial.DisableKeyword("_MASKENABLED_ON");
+                    if (worldGen.WorldMaterial.IsKeywordEnabled("_MASKENABLED_ON"))
+                        worldGen.WorldMaterial.DisableKeyword("_MASKENABLED_ON");
                 }
                 else
                 {
-                    if (!worldGen.worldMaterial.IsKeywordEnabled("_MASKENABLED_ON"))
-                        worldGen.worldMaterial.EnableKeyword("_MASKENABLED_ON");
+                    if (!worldGen.WorldMaterial.IsKeywordEnabled("_MASKENABLED_ON"))
+                        worldGen.WorldMaterial.EnableKeyword("_MASKENABLED_ON");
                 }
             }
         }

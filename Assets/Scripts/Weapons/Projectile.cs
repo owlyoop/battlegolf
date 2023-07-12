@@ -9,38 +9,42 @@ public class Projectile : NetworkBehaviour
 
 
     [Header("Projectile Properties")]
-    public float lifetime = 15; //how long in seconds before the gameobject gets destroyed.
-    public float launchStrength = 1;
-    public float gravityStrength = 1;
+    public float Lifetime = 15; //how long in seconds before the gameobject gets destroyed.
+    public float LaunchStrength = 1;
+    public float GravityStrength = 1;
 
-    public float maxCurve = 64f;
-    public float maxForce = 80f;
-    public float curveMultiplier = 1;
+    public float MaxCurve = 64f;
+    public float MaxForce = 80f;
+    public float CurveMultiplier = 1;
 
-    public Vector3 launchDirection;
-    public Vector3 gravityDirection;
-    public Vector3 curveDirection;
+    public Vector3 LaunchDirection;
+    public Vector3 GravityDirection;
+    public Vector3 CurveDirection;
 
     Vector3 currentVelocity;
 
     [Header("References")]
-    public Pawn shooter;
+    public Pawn Shooter;
     public Rigidbody rb;
     public Collider col;
-    public Explosion explosionPrefab;
+    public Explosion ExplosionPrefab;
+    public GameObject CameraFollowPoint;
 
     int baseDamage;
 
-    public LayerMask validCollisions;
+    public LayerMask ValidCollisions;
 
     Vector3 prevPos;
 
     private void Start()
     {
-        Invoke(nameof(Kill), lifetime);
+        Invoke(nameof(Kill), Lifetime);
         rb = this.GetComponent<Rigidbody>();
-        Physics.IgnoreCollision(col, shooter.col);
+        Physics.IgnoreCollision(col, Shooter.col);
         prevPos = transform.position;
+        owner = Shooter.Owner;
+        CameraFollowPoint.transform.position = this.transform.position;
+        CameraFollowPoint.transform.rotation = Quaternion.identity;
     }
 
     private void FixedUpdate()
@@ -54,13 +58,15 @@ public class Projectile : NetworkBehaviour
         if (Physics.Raycast(prevPos, rb.velocity.normalized, out hit, 0.4f, 1 << LayerMask.NameToLayer("World Geometry")))
         {
             //Debug.Log("Raycast hit! Projectile explosion position: " + this.transform.position + " prevpos" + prevPos);
-            if (shooter.owner != null && shooter.owner.isServer)
+            if (Shooter.Owner != null && Shooter.Owner.isServer)
             {
-                GameManager.GetInstance().worldNetwork.RpcAlterTerrainRadius(this.transform.position, true, 1, 5);
+                GameManager.GetInstance().WorldNetwork.RpcAlterTerrainRadius(this.transform.position, true, 1, 5);
             }
             Kill();
         }
         prevPos = transform.position;
+        CameraFollowPoint.transform.position = this.transform.position;
+        CameraFollowPoint.transform.rotation = Quaternion.identity;
     }
 
     void UpdateVelocity()
@@ -70,16 +76,16 @@ public class Projectile : NetworkBehaviour
         //TODO: add a cap on how many degrees it can turn
         //make the curve behave like curve in a golf game. gotta research that
 
-        rb.velocity = Quaternion.Euler(0, (maxCurve * curveMultiplier) * t, 0) * rb.velocity;
+        rb.velocity = Quaternion.Euler(0, (MaxCurve * CurveMultiplier) * t, 0) * rb.velocity;
 
-        rb.velocity += (Vector3.down * gravityStrength) * t;
+        rb.velocity += (Vector3.down * GravityStrength) * t;
     }
 
     public void Launch(Quaternion launchDir, float forceMulti, float curveMulti)
     {
         transform.rotation = launchDir;
-        rb.velocity = transform.forward * (maxForce * forceMulti);
-        curveMultiplier = curveMulti;
+        rb.velocity = transform.forward * (MaxForce * forceMulti);
+        CurveMultiplier = curveMulti;
     }
 
     void Kill()
@@ -93,9 +99,10 @@ public class Projectile : NetworkBehaviour
         {
             //-Debug.Log("Projectile explosion position: " + this.transform.position);
             //GameManager.GetInstance().worldGen.AlterTerrainRadius(this.transform.position, true, 1, 5, explosionPrefab);
-            if (shooter.owner != null && shooter.owner.isServer)
+            if (Shooter.Owner != null && Shooter.Owner.isServer)
             {
-                GameManager.GetInstance().worldNetwork.RpcAlterTerrainRadius(this.transform.position, true, 1, 5);
+                GameManager.GetInstance().WorldNetwork.RpcAlterTerrainRadius(this.transform.position, true, 1, 5);
+                owner.NetworkCalls.RpcOnProjectileKilled();
             }
             Kill();
         }

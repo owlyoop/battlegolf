@@ -79,6 +79,18 @@ public class CameraController : MonoBehaviour
         PlanarDirection = FollowTransform.forward;
         _currentFollowPosition = FollowTransform.position;
     }
+    
+    public void ChangeCameraSettings(CameraSettings settings)
+    {
+        FollowPointFraming = settings.FollowPointFraming;
+        FollowingSharpness = settings.FollowSharpness;
+        DefaultDistance = settings.DefaultDistance;
+        MinDistance = settings.MinDistance;
+        MaxDistance = settings.MaxDistance;
+        TargetDistance = settings.TargetDistance;
+        DistanceMovementSpeed = settings.DistanceMovespeed;
+        DistanceMovementSharpness = settings.DistanceMoveSharpness;
+    }
 
     public void UpdateWithInput(float deltaTime, float zoomInput, Vector3 rotationInput)
     {

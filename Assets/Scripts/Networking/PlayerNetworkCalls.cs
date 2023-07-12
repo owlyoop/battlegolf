@@ -27,9 +27,26 @@ public class PlayerNetworkCalls : NetworkBehaviour
             Projectile proj = projGo.GetComponent<Projectile>();
             proj.transform.position = spawnPosition;
             proj.transform.rotation = shotRotation;
-            proj.shooter = shooter.GetComponent<Pawn>();
+            proj.Shooter = shooter.GetComponent<Pawn>();
             proj.Launch(proj.transform.rotation, force, curve);
+
+            foreach(var p in lobby.GetPlayers())
+            {
+                p.battlePlayer.Cam.SetFollowTransform(proj.CameraFollowPoint.transform);
+            }
         }
-        
+    }
+
+    [ClientRpc]
+    public void RpcOnProjectileKilled()
+    {
+        if (NetworkManager.singleton is BattlegolfNetworkManager lobby)
+        {
+            foreach (var p in lobby.GetPlayers())
+            {
+                p.battlePlayer.Cam.SetFollowTransform(p.battlePlayer.GetSelectedPawn().transform);
+            }
+        }
+
     }
 }

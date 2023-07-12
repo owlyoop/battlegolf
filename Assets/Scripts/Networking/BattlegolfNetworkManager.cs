@@ -18,12 +18,12 @@ public enum BattlegolfNetworkState
 
 public class BattlegolfNetworkManager : NetworkManager
 {
-    public BattlegolfNetworkState currentState = BattlegolfNetworkState.Lobby;
+    public BattlegolfNetworkState CurrentState = BattlegolfNetworkState.Lobby;
 
     [Scene]
     [SerializeField] private string mainGameScene = "";
 
-    public List<PlayerManager> players = new List<PlayerManager>();
+    private List<PlayerManager> players = new List<PlayerManager>();
 
     private int numSpawnedPlayers;
     public int NumSpawnedPlayers
@@ -36,12 +36,23 @@ public class BattlegolfNetworkManager : NetworkManager
     /// True when all players have submitted a Ready message
     /// </summary>
     [Tooltip("Diagnostic flag indicating all players are ready to play")]
-    [SerializeField] bool allPlayersReady = false;
+    [SerializeField] bool AllPlayersReady = false;
 
     // Called by UI element NetworkAddressInput.OnValueChanged
     public void SetHostname(string hostname)
     {
         networkAddress = hostname;
+    }
+
+    public List<PlayerManager> GetPlayers()
+    {
+        return players;
+    }
+
+    public void AddPlayerManagerToPlayerList(PlayerManager playerToAdd)
+    {
+        //TODO: Validate
+        players.Add(playerToAdd);
     }
 
     public void ReadyStatusChanged()
@@ -54,7 +65,7 @@ public class BattlegolfNetworkManager : NetworkManager
             if (slot != null)
             {
                 CurrentPlayers++;
-                if (slot.readyToBegin)
+                if (slot.ReadyToBegin)
                 {
                     ReadyPlayers++;
                 }
@@ -63,7 +74,7 @@ public class BattlegolfNetworkManager : NetworkManager
 
         if (CurrentPlayers == ReadyPlayers)
         {
-            allPlayersReady = true;
+            AllPlayersReady = true;
             foreach (PlayerManager slot in players)
             {
                 if (slot.netIdentity.isServer)
@@ -74,7 +85,7 @@ public class BattlegolfNetworkManager : NetworkManager
         }
         else
         {
-            allPlayersReady = false;
+            AllPlayersReady = false;
             LobbyUI.instance.startGameButton.interactable = false;
         }
 
@@ -86,15 +97,52 @@ public class BattlegolfNetworkManager : NetworkManager
         {
             if (conn.Value.identity.isServer)
             {
-                if (allPlayersReady)
+                if (AllPlayersReady)
                 {
-                    currentState = BattlegolfNetworkState.Battle;
+                    CurrentState = BattlegolfNetworkState.Battle;
                     ServerChangeScene(mainGameScene);
                     numSpawnedPlayers = 0;
                 }
                 return;
             }
         }
+    }
+
+    public void ClearDuplicatesInLobbyList()
+    {
+        players.RemoveAll(PlayerManager => PlayerManager == null);
+    }
+
+    public GameObject GetBattleplayerPrefab()
+    {
+        GameObject bpPrefab = null;
+        foreach (var prefab in spawnPrefabs)
+        {
+            if (prefab.gameObject.name == "BattlePlayer")
+            {
+                bpPrefab = prefab;
+            }
+        }
+        if (bpPrefab == null)
+            Debug.LogError("Cannot find the network spawnable prefab in the networkmanager");
+
+        return bpPrefab;
+    }
+
+    public GameObject GetPawnPrefab()
+    {
+        GameObject pawnPrefab = null;
+        foreach (var prefab in spawnPrefabs)
+        {
+            if (prefab.gameObject.name == "Pawn")
+            {
+                pawnPrefab = prefab;
+            }
+        }
+        if (pawnPrefab == null)
+            Debug.LogError("Cannot find the network spawnable prefab in the networkmanager");
+
+        return pawnPrefab;
     }
 
     #region Unity Callbacks
@@ -321,7 +369,7 @@ public class BattlegolfNetworkManager : NetworkManager
     /// </summary>
     public override void OnStartHost() 
     {
-        if (!allPlayersReady)
+        if (!AllPlayersReady)
             return;
     }
 
@@ -352,42 +400,5 @@ public class BattlegolfNetworkManager : NetworkManager
     public override void OnStopClient() { }
 
     #endregion
-
-    public void ClearDuplicatesInLobbyList()
-    {
-        players.RemoveAll(PlayerManager => PlayerManager == null);
-    }
-
-    public GameObject GetBattleplayerPrefab()
-    {
-        GameObject bpPrefab = null;
-        foreach (var prefab in spawnPrefabs)
-        {
-            if (prefab.gameObject.name == "BattlePlayer")
-            {
-                bpPrefab = prefab;
-            }
-        }
-        if (bpPrefab == null)
-            Debug.LogError("Cannot find the network spawnable prefab in the networkmanager");
-
-        return bpPrefab;
-    }
-
-    public GameObject GetPawnPrefab()
-    {
-        GameObject pawnPrefab = null;
-        foreach (var prefab in spawnPrefabs)
-        {
-            if (prefab.gameObject.name == "Pawn")
-            {
-                pawnPrefab = prefab;
-            }
-        }
-        if (pawnPrefab == null)
-            Debug.LogError("Cannot find the network spawnable prefab in the networkmanager");
-
-        return pawnPrefab;
-    }
 
 }

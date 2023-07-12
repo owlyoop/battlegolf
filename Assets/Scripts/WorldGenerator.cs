@@ -20,32 +20,32 @@ public struct Voxel
 public class WorldGenerator : MonoBehaviour
 {
     [HideInInspector]
-    public int numChunksWidth = 16;
+    public int NumChunksWidth = 16;
     [HideInInspector]
-    public int numChunksLength = 16;
+    public int NumChunksLength = 16;
     [HideInInspector]
-    public int numChunksHeight = 4;
+    public int NumChunksHeight = 4;
 
-    public Voxel[,,] voxels;
+    public Voxel[,,] Voxels;
 
-    public Chunk[,,] chunkGrid;
+    public Chunk[,,] ChunkGrid;
 
     [Header("Terrain Settings")]
-    public float surfaceLevel = 0f; //Negative is air, Positive is depth.
-    public bool smoothTerrain;
-    public bool flatShading;
-    public float voxelsPerMeter = 1f; //size in unity meters.
-    public bool useDualContouring = false;
+    public float SurfaceLevel = 0f; //Negative is air, Positive is depth.
+    public bool SmoothTerrain;
+    public bool FlatShading;
+    public float VoxelsPerMeter = 1f; //size in unity meters.
+    public bool UseDualContouring = false;
     float steps;
 
-    public Material worldMaterial;
-    public Material backsideMaterial;
+    public Material WorldMaterial;
+    public Material BacksideMaterial;
 
-    public List<Vector3> pawnSpawns = new List<Vector3>();
+    public List<Vector3> PawnSpawns = new List<Vector3>();
 
     [Header("References")]
-    public GameManager gameManager;
-    public WorldGenGraph worldGraph;
+    public GameManager GameManagerRef;
+    public WorldGenGraph WorldGraph;
 
     public delegate void WorldGenerationCompleted();
 
@@ -57,20 +57,20 @@ public class WorldGenerator : MonoBehaviour
 
     private void Start()
     {
-        steps = 1 / voxelsPerMeter;
-        gameManager = FindObjectOfType<GameManager>();
+        steps = 1 / VoxelsPerMeter;
+        GameManagerRef = FindObjectOfType<GameManager>();
         DestroyWorldInPlayMode();
     }
 
     public void Initialize()
     {
-        worldGraph.GetEndNode();
-        worldGraph.endNode.GetAllNoiseNodes();
-        worldGraph.endNode.GetAllFilterNodes();
-        numChunksLength = worldGraph.GetNumChunksLength();
-        numChunksWidth = worldGraph.GetNumChunksWidth();
-        numChunksHeight = worldGraph.GetNumChunksHeight();
-        chunkGrid = new Chunk[numChunksWidth,numChunksHeight,numChunksLength];
+        WorldGraph.GetEndNode();
+        WorldGraph.endNode.GetAllNoiseNodes();
+        WorldGraph.endNode.GetAllFilterNodes();
+        NumChunksLength = WorldGraph.GetNumChunksLength();
+        NumChunksWidth = WorldGraph.GetNumChunksWidth();
+        NumChunksHeight = WorldGraph.GetNumChunksHeight();
+        ChunkGrid = new Chunk[NumChunksWidth,NumChunksHeight,NumChunksLength];
     }
 
     /// <summary>
@@ -82,28 +82,28 @@ public class WorldGenerator : MonoBehaviour
 
         int counter = 0;
 
-        for (int x = 0; x < numChunksWidth; x++)
+        for (int x = 0; x < NumChunksWidth; x++)
         {
-            for (int y = 0; y < numChunksHeight; y++)
+            for (int y = 0; y < NumChunksHeight; y++)
             {
-                for (int z = 0; z < numChunksLength; z++)
+                for (int z = 0; z < NumChunksLength; z++)
                 {
-                    Vector3 chunkPos = new Vector3((x * MarchingCubesData.ChunkWidth) / voxelsPerMeter, (y * MarchingCubesData.ChunkHeight) / voxelsPerMeter, (z * MarchingCubesData.ChunkWidth) / voxelsPerMeter);
+                    Vector3 chunkPos = new Vector3((x * MarchingCubesData.ChunkWidth) / VoxelsPerMeter, (y * MarchingCubesData.ChunkHeight) / VoxelsPerMeter, (z * MarchingCubesData.ChunkWidth) / VoxelsPerMeter);
 
                     var go = new GameObject();
                     go.AddComponent<Chunk>();
                     go.transform.parent = this.transform;
                     var chunk = go.GetComponent<Chunk>();
-                    chunk.Initialize(this.gameObject.GetComponent<WorldGenerator>(), chunkPos, smoothTerrain, flatShading);
+                    chunk.Initialize(this.gameObject.GetComponent<WorldGenerator>(), chunkPos, SmoothTerrain, FlatShading);
 
                     //chunks.Add(chunkPos, new Chunk(this, chunkPos, smoothTerrain, flatShading));
                     //chunks.Add(counter, chunk);
-                    chunkGrid[x, y, z] = chunk;
-                    chunk.chunkGridPosition = new Vector3Int(x,y,z);
-                    chunk.chunkObject.transform.SetParent(transform);
-                    chunk.backside.transform.SetParent(chunkGrid[x,y,z].chunkObject.transform);
-                    chunk.backside.transform.localPosition = Vector3.zero;
-                    chunk.chunkObject.layer = 10;
+                    ChunkGrid[x, y, z] = chunk;
+                    chunk.ChunkGridPosition = new Vector3Int(x,y,z);
+                    chunk.ChunkObject.transform.SetParent(transform);
+                    chunk.Backside.transform.SetParent(ChunkGrid[x,y,z].ChunkObject.transform);
+                    chunk.Backside.transform.localPosition = Vector3.zero;
+                    chunk.ChunkObject.layer = 10;
                     counter++;
                 }
             }
@@ -113,12 +113,12 @@ public class WorldGenerator : MonoBehaviour
         BuildFloorMesh();
         UpdateDirtyChunks();
 
-        if (gameManager != null)
+        if (GameManagerRef != null)
         {
             //center point of world
-            gameManager.worldCenterPoint.position = new Vector3(numChunksWidth * MarchingCubesData.ChunkWidth * (1f / voxelsPerMeter) / 2f,
-                numChunksHeight * MarchingCubesData.ChunkHeight * (1f / voxelsPerMeter) / 2f,
-                numChunksLength * MarchingCubesData.ChunkWidth * (1f / voxelsPerMeter) / 2f);
+            GameManagerRef.WorldCenterPoint.position = new Vector3(NumChunksWidth * MarchingCubesData.ChunkWidth * (1f / VoxelsPerMeter) / 2f,
+                NumChunksHeight * MarchingCubesData.ChunkHeight * (1f / VoxelsPerMeter) / 2f,
+                NumChunksLength * MarchingCubesData.ChunkWidth * (1f / VoxelsPerMeter) / 2f);
         }
     }
 
@@ -133,24 +133,24 @@ public class WorldGenerator : MonoBehaviour
     /// </summary>
     void BuildVoxelMap()
     {
-        voxels = new Voxel[numChunksWidth * MarchingCubesData.ChunkWidth, numChunksHeight * MarchingCubesData.ChunkHeight, numChunksLength * MarchingCubesData.ChunkWidth];
+        Voxels = new Voxel[NumChunksWidth * MarchingCubesData.ChunkWidth, NumChunksHeight * MarchingCubesData.ChunkHeight, NumChunksLength * MarchingCubesData.ChunkWidth];
 
-        for (int x = 0; x < voxels.GetLength(0); x++)
+        for (int x = 0; x < Voxels.GetLength(0); x++)
         {
-            for (int y = 0; y < voxels.GetLength(1); y++)
+            for (int y = 0; y < Voxels.GetLength(1); y++)
             {
-                for (int z = 0; z < voxels.GetLength(2); z++)
+                for (int z = 0; z < Voxels.GetLength(2); z++)
                 {
-                    Chunk ch = GetChunkFromWorldPos(new Vector3(x / voxelsPerMeter, y / voxelsPerMeter, z / voxelsPerMeter));
+                    Chunk ch = GetChunkFromWorldPos(new Vector3(x / VoxelsPerMeter, y / VoxelsPerMeter, z / VoxelsPerMeter));
                     //voxels[x, y, z].chunk = GetChunkFromWorldPos(new Vector3(x / voxelsPerMeter , y / voxelsPerMeter , z / voxelsPerMeter));
-                    voxels[x, y, z].index = new int3(ch.chunkGridPosition.x, ch.chunkGridPosition.y, ch.chunkGridPosition.z);
-                    ch = chunkGrid[voxels[x, y, z].index.x, voxels[x, y, z].index.y, voxels[x, y, z].index.z];
-                    voxels[x, y, z].gridPosition = new int3(x, y, z);
-                    voxels[x, y, z].worldPosition = new Vector3(x / voxelsPerMeter, y / voxelsPerMeter, z / voxelsPerMeter);
+                    Voxels[x, y, z].index = new int3(ch.ChunkGridPosition.x, ch.ChunkGridPosition.y, ch.ChunkGridPosition.z);
+                    ch = ChunkGrid[Voxels[x, y, z].index.x, Voxels[x, y, z].index.y, Voxels[x, y, z].index.z];
+                    Voxels[x, y, z].gridPosition = new int3(x, y, z);
+                    Voxels[x, y, z].worldPosition = new Vector3(x / VoxelsPerMeter, y / VoxelsPerMeter, z / VoxelsPerMeter);
 
-                    voxels[x, y, z].localGridPosition = new int3(x - (ch.chunkGridPosition.x * MarchingCubesData.ChunkWidth)
-                        , y - (ch.chunkGridPosition.y * MarchingCubesData.ChunkHeight)
-                        , z - (ch.chunkGridPosition.z * MarchingCubesData.ChunkWidth));
+                    Voxels[x, y, z].localGridPosition = new int3(x - (ch.ChunkGridPosition.x * MarchingCubesData.ChunkWidth)
+                        , y - (ch.ChunkGridPosition.y * MarchingCubesData.ChunkHeight)
+                        , z - (ch.ChunkGridPosition.z * MarchingCubesData.ChunkWidth));
                 }
             }
         }
@@ -163,12 +163,12 @@ public class WorldGenerator : MonoBehaviour
             DestroyImmediate(ch.Value.chunkObject);
         }
         chunks.Clear();*/
-        if (chunkGrid != null)
+        if (ChunkGrid != null)
         {
-            foreach (Chunk ch in chunkGrid)
+            foreach (Chunk ch in ChunkGrid)
             {
                 if (ch != null)
-                    DestroyImmediate(ch.chunkObject);
+                    DestroyImmediate(ch.ChunkObject);
             }
             DestroyImmediate(floorMesh);
         }
@@ -181,12 +181,12 @@ public class WorldGenerator : MonoBehaviour
             Destroy(ch.Value.chunkObject);
         }
         chunks.Clear();*/
-        if (chunkGrid != null)
+        if (ChunkGrid != null)
         {
-            foreach (Chunk ch in chunkGrid)
+            foreach (Chunk ch in ChunkGrid)
             {
                 if (ch != null)
-                    DestroyImmediate(ch.chunkObject);
+                    DestroyImmediate(ch.ChunkObject);
             }
             Destroy(floorMesh);
         }
@@ -204,9 +204,9 @@ public class WorldGenerator : MonoBehaviour
 
         Vector3[] vertices = {
             new Vector3(0,0.5f,0),
-            new Vector3(0, 0.5f ,numChunksLength * MarchingCubesData.ChunkWidth / voxelsPerMeter ),
-            new Vector3(numChunksWidth * MarchingCubesData.ChunkWidth / voxelsPerMeter , 0.5f ,numChunksLength * MarchingCubesData.ChunkWidth / voxelsPerMeter ),
-            new Vector3(numChunksWidth * MarchingCubesData.ChunkWidth / voxelsPerMeter, 0.5f, 0)};
+            new Vector3(0, 0.5f ,NumChunksLength * MarchingCubesData.ChunkWidth / VoxelsPerMeter ),
+            new Vector3(NumChunksWidth * MarchingCubesData.ChunkWidth / VoxelsPerMeter , 0.5f ,NumChunksLength * MarchingCubesData.ChunkWidth / VoxelsPerMeter ),
+            new Vector3(NumChunksWidth * MarchingCubesData.ChunkWidth / VoxelsPerMeter, 0.5f, 0)};
         int[] triangles = { 0, 3, 2, 2, 1, 0};
 
         Mesh mesh = new Mesh();
@@ -215,7 +215,7 @@ public class WorldGenerator : MonoBehaviour
         mesh.triangles = triangles;
 
         meshFilter.mesh = mesh;
-        renderer.material = backsideMaterial;
+        renderer.material = BacksideMaterial;
 
         mesh.RecalculateNormals();
         floorMesh = go;
@@ -228,18 +228,18 @@ public class WorldGenerator : MonoBehaviour
     /// <returns></returns>
     public Chunk GetChunkFromWorldPos(Vector3 pos)
     {
-        if (pos.x < 0 || pos.y < 0 || pos.z < 0 || pos.x >= (numChunksWidth * MarchingCubesData.ChunkWidth) / voxelsPerMeter
-            || pos.y >= (numChunksHeight * MarchingCubesData.ChunkHeight) / voxelsPerMeter
-            || pos.z >= (numChunksLength * MarchingCubesData.ChunkWidth) / voxelsPerMeter )
+        if (pos.x < 0 || pos.y < 0 || pos.z < 0 || pos.x >= (NumChunksWidth * MarchingCubesData.ChunkWidth) / VoxelsPerMeter
+            || pos.y >= (NumChunksHeight * MarchingCubesData.ChunkHeight) / VoxelsPerMeter
+            || pos.z >= (NumChunksLength * MarchingCubesData.ChunkWidth) / VoxelsPerMeter )
         {
             Debug.Log("GetChunkFromWorldPos null! " + pos.ToString());
             return null;
         }
         else
         {
-            int x = Mathf.FloorToInt(pos.x / (MarchingCubesData.ChunkWidth / voxelsPerMeter));
-            int y = Mathf.FloorToInt(pos.y / (MarchingCubesData.ChunkHeight / voxelsPerMeter));
-            int z = Mathf.FloorToInt(pos.z / (MarchingCubesData.ChunkWidth / voxelsPerMeter));
+            int x = Mathf.FloorToInt(pos.x / (MarchingCubesData.ChunkWidth / VoxelsPerMeter));
+            int y = Mathf.FloorToInt(pos.y / (MarchingCubesData.ChunkHeight / VoxelsPerMeter));
+            int z = Mathf.FloorToInt(pos.z / (MarchingCubesData.ChunkWidth / VoxelsPerMeter));
 
             #region
             /*Vector3 result = new Vector3(Mathf.Round(pos.x / (MarchingCubesData.ChunkWidth / voxelsPerMeter)) * (MarchingCubesData.ChunkWidth / voxelsPerMeter),
@@ -262,9 +262,9 @@ public class WorldGenerator : MonoBehaviour
             #endregion
 
             //if (chunks.TryGetValue(result2, out Chunk value))
-            if (chunkGrid[x,y,z] != null)
+            if (ChunkGrid[x,y,z] != null)
             {
-                return chunkGrid[x,y,z];
+                return ChunkGrid[x,y,z];
             }
             else
             {
@@ -291,21 +291,21 @@ public class WorldGenerator : MonoBehaviour
 
         //Debug.Log("Closest center multiple of voxelspermeter steps = x: " + xi + " y: " + yi + " z: " + zi);
 
-        if (xi > voxels.GetLength(0) || yi > voxels.GetLength(1) || zi > voxels.GetLength(2) || xi < 0 || yi < 0 || zi < 0)
+        if (xi > Voxels.GetLength(0) || yi > Voxels.GetLength(1) || zi > Voxels.GetLength(2) || xi < 0 || yi < 0 || zi < 0)
         {
             Debug.LogError("Out of range of the array of worldgen.voxels " + xi + " " + yi + " " + zi);
-            return voxels[0, 0, 0];
+            return Voxels[0, 0, 0];
         }
         else
         {
-            if (xi == voxels.GetLength(0))
+            if (xi == Voxels.GetLength(0))
                 xi--;
-            if (yi == voxels.GetLength(1))
+            if (yi == Voxels.GetLength(1))
                 yi--;
-            if (zi == voxels.GetLength(2))
+            if (zi == Voxels.GetLength(2))
                 zi--;
             //Debug.Log("Voxel world pos data = " + voxels[xi,yi,zi].worldPosition);
-            return voxels[xi, yi, zi];
+            return Voxels[xi, yi, zi];
         }
         
     }
@@ -335,9 +335,9 @@ public class WorldGenerator : MonoBehaviour
                 for (int z = centerVoxel.gridPosition.z - rings; z < centerVoxel.gridPosition.z + rings + 1; z++)
                 {
                     if (x < 0 || y < 0 || z < 0 
-                        || x >= (numChunksWidth * MarchingCubesData.ChunkWidth) / 1
-                        || y >= (numChunksHeight * MarchingCubesData.ChunkHeight) / 1
-                        || z >= (numChunksLength * MarchingCubesData.ChunkWidth) / 1)
+                        || x >= (NumChunksWidth * MarchingCubesData.ChunkWidth) / 1
+                        || y >= (NumChunksHeight * MarchingCubesData.ChunkHeight) / 1
+                        || z >= (NumChunksLength * MarchingCubesData.ChunkWidth) / 1)
                     {
                         //out of bounds
 
@@ -346,7 +346,7 @@ public class WorldGenerator : MonoBehaviour
                     {
                         //var max = (numChunksWidth * MarchingCubesData.ChunkWidth) / 1;
                         //Debug.Log($"{x} {y} {z} max is {max}");
-                        var vox = voxels[x, y, z];
+                        var vox = Voxels[x, y, z];
 
                         distanceFromCenter = Vector3.Distance(pos, vox.worldPosition);
                         if (distanceFromCenter <= radius)
@@ -359,7 +359,7 @@ public class WorldGenerator : MonoBehaviour
                             //Debug.Log("result is " + result + "|| distance: " + distanceFromCenter);
 
                             //vox.chunk.AlterTerrain(vox, isDigging, result * amount, false);
-                            chunkGrid[vox.index.x, vox.index.y, vox.index.z].AlterTerrain(vox, isDigging, result * amount, false);
+                            ChunkGrid[vox.index.x, vox.index.y, vox.index.z].AlterTerrain(vox, isDigging, result * amount, false);
                         }
                     }
                 }
@@ -374,12 +374,12 @@ public class WorldGenerator : MonoBehaviour
     /// </summary>
     public void UpdateDirtyChunks()
     {
-        foreach(Chunk ch in chunkGrid)
+        foreach(Chunk ch in ChunkGrid)
         {
-            if (ch.isDirty)
+            if (ch.IsDirty)
             {
                 ch.CreateMeshData();
-                ch.isDirty = false;
+                ch.IsDirty = false;
             }
         }
     }
@@ -391,7 +391,7 @@ public class WorldGenerator : MonoBehaviour
     {
         Initialize();
 
-        if (!useDualContouring)
+        if (!UseDualContouring)
             Generate();
         else
             GenerateDualContouring();
@@ -414,14 +414,14 @@ public class WorldGenerator : MonoBehaviour
     /// <param name="count">The number of spawnpoints to generate</param>
     public void GeneratePawnSpawnpoints(int count)
     {
-        pawnSpawns.Clear();
+        PawnSpawns.Clear();
         //a spawn point should be above land, and have enough not-land voxels above for clearence. additionally i could check the steepness of the land below so a pawn doesnt just slide off a cliff
         
         List<Vector3> validSpawns = new List<Vector3>();
 
-        int width = numChunksWidth * MarchingCubesData.ChunkWidth;
-        int height = numChunksHeight * MarchingCubesData.ChunkHeight;
-        int length = numChunksLength * MarchingCubesData.ChunkWidth;
+        int width = NumChunksWidth * MarchingCubesData.ChunkWidth;
+        int height = NumChunksHeight * MarchingCubesData.ChunkHeight;
+        int length = NumChunksLength * MarchingCubesData.ChunkWidth;
 
         //wonder if just generating random points and checking if theyre valid would be better than getting every possible spawnpoint and then randomly picking them
 
@@ -435,9 +435,9 @@ public class WorldGenerator : MonoBehaviour
             while (validSpawn == false)
             {
                 //random world position to terrain map value.
-                float x = Random.Range(1f, (numChunksWidth * MarchingCubesData.ChunkWidth) / voxelsPerMeter);
-                float y = Random.Range(1f, (numChunksHeight * MarchingCubesData.ChunkHeight) / voxelsPerMeter);
-                float z = Random.Range(1f, (numChunksLength * MarchingCubesData.ChunkWidth) / voxelsPerMeter);
+                float x = Random.Range(1f, (NumChunksWidth * MarchingCubesData.ChunkWidth) / VoxelsPerMeter);
+                float y = Random.Range(1f, (NumChunksHeight * MarchingCubesData.ChunkHeight) / VoxelsPerMeter);
+                float z = Random.Range(1f, (NumChunksLength * MarchingCubesData.ChunkWidth) / VoxelsPerMeter);
 
                 Vector3 worldPos = new Vector3(x,y,z);
 
@@ -495,7 +495,7 @@ public class WorldGenerator : MonoBehaviour
 
         for (int i = 0; i < validSpawns.Count; i++)
         {
-            pawnSpawns.Add(validSpawns[i]);
+            PawnSpawns.Add(validSpawns[i]);
             GameObject go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.transform.position = validSpawns[i];
             go.transform.localScale = new Vector3(0.25f, 0.25f, 0.25f);

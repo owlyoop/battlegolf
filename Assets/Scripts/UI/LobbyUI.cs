@@ -36,7 +36,7 @@ public class LobbyUI : NetworkBehaviour
     public void CmdSend(string message, NetworkConnectionToClient sender = null)
     {
         if (!connNames.ContainsKey(sender))
-            connNames.Add(sender, sender.identity.GetComponent<PlayerManager>().playerName);
+            connNames.Add(sender, sender.identity.GetComponent<PlayerManager>().PlayerName);
 
         if (!string.IsNullOrWhiteSpace(message))
             RpcReceive(connNames[sender], message.Trim());

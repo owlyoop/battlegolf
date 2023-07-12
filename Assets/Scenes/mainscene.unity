@@ -246,9 +246,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eb30398e3cbd4904792ccd6859079149, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  numChunksWidth: 4
-  numChunksLength: 4
-  numChunksHeight: 2
+  numChunksWidth: 6
+  numChunksLength: 6
+  numChunksHeight: 3
   surfaceLevel: 0
   smoothTerrain: 1
   flatShading: 0
@@ -441,6 +441,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30306d5768d1e414e8bf7e7712d7b662, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
   numPlayers: 1
   numStartingPawns: 4
   turnLengthInSeconds: 45
@@ -449,7 +451,7 @@ MonoBehaviour:
   gameTimer: 0
   windDirection: {x: 0, y: 0, z: 0}
   state: 0
-  activePlayer: {fileID: 0}
+  currentPlayersTurn: {fileID: 0}
   worldGen: {fileID: 224586182}
   worldCenterPoint: {fileID: 1490771935}
   worldNetwork: {fileID: 1301397198}
@@ -532,7 +534,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1490771934}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 64, y: 32, z: 64}
+  m_LocalPosition: {x: 96, y: 48, z: 96}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

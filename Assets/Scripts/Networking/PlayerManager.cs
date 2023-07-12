@@ -13,14 +13,14 @@ public class PlayerManager : NetworkBehaviour
     public static readonly HashSet<string> playerNames = new HashSet<string>();
 
     [SyncVar(hook = nameof(OnPlayerNameChanged))]
-    public string playerName;
+    public string PlayerName;
 
     [Header("References")]
     [SerializeField] private NetworkConnection connection;
     [SerializeField] private LobbyPlayerUI lobbyUIObjectPrefab;
     [SerializeField] private LobbyPlayerUI lobbyUIObject;
-    public BattlePlayer battlePlayer { get; private set; }
-    public NetworkIdentity identity { get; private set; }
+    [SerializeField] public BattlePlayer battlePlayer;
+    public NetworkIdentity Identity { get; private set; }
 
     /// <summary>
     /// Diagnostic flag indicating whether this player is ready for the game to begin.
@@ -29,7 +29,7 @@ public class PlayerManager : NetworkBehaviour
     /// </summary>
     [Tooltip("Diagnostic flag indicating whether this player is ready for the game to begin")]
     [SyncVar(hook = nameof(PlayerReadyStateChanged))]
-    public bool readyToBegin = false;
+    public bool ReadyToBegin = false;
 
     // RuntimeInitializeOnLoadMethod -> fast playmode without domain reload
     [UnityEngine.RuntimeInitializeOnLoadMethod]
@@ -40,7 +40,7 @@ public class PlayerManager : NetworkBehaviour
 
     private void Start()
     {
-        identity = GetComponent<NetworkIdentity>();
+        Identity = GetComponent<NetworkIdentity>();
     }
 
     private void OnSpawned()
@@ -51,20 +51,20 @@ public class PlayerManager : NetworkBehaviour
     private void AddSelfToLobbyList(BattlegolfNetworkManager lobby)
     {
         bool alreadyInList = false;
-        foreach (var player in lobby.players)
+        foreach (var player in lobby.GetPlayers())
         {
             if (player == this)
                 alreadyInList = true;
         }
 
         if (!alreadyInList)
-            lobby.players.Add(this);
+            lobby.AddPlayerManagerToPlayerList(this);
     }
 
 
     void OnPlayerNameChanged(string _, string newName)
     {
-        LobbyUI.instance.localPlayerName = playerName;
+        LobbyUI.instance.localPlayerName = PlayerName;
     }
 
     #region Commands
@@ -72,7 +72,7 @@ public class PlayerManager : NetworkBehaviour
     [Command]
     void CmdChangeReadyStatus(bool newValue)
     {
-        readyToBegin = newValue;
+        ReadyToBegin = newValue;
     }
 
     #endregion
@@ -91,7 +91,7 @@ public class PlayerManager : NetworkBehaviour
     public override void OnStartServer()
     {
         base.OnStartServer();
-        playerName = (string)connectionToClient.authenticationData;
+        PlayerName = (string)connectionToClient.authenticationData;
     }
 
     /// <summary>
@@ -104,7 +104,7 @@ public class PlayerManager : NetworkBehaviour
         {
             LobbyUI.instance.readyToggle.onValueChanged.AddListener(CmdChangeReadyStatus);
             lobbyUIObject = Instantiate(lobbyUIObjectPrefab, LobbyUI.instance.userListGrid.transform);
-            lobbyUIObject.usernameText.text = playerName;
+            lobbyUIObject.usernameText.text = PlayerName;
             lobbyUIObject.readyObject.SetActive(false);
 
             OnPlayerReadyStatusChanged += lobbyUIObject.OnReadyStateChanged;
@@ -118,20 +118,23 @@ public class PlayerManager : NetworkBehaviour
             AddSelfToLobbyList(lobby);
 
             //Spawn the battleplayer
-            if (lobby.currentState == BattlegolfNetworkState.Battle)
+            if (lobby.CurrentState == BattlegolfNetworkState.Battle)
             {
                 GameObject bp = Instantiate(lobby.GetBattleplayerPrefab());
                 bp.GetComponent<BattlePlayer>().SetManager(this);
+                
                 NetworkServer.Spawn(bp, this.gameObject);
                 bp.GetComponent<BattlePlayer>().OnNetworkSpawn();
+
+                this.battlePlayer = bp.GetComponent<BattlePlayer>();
 
                 lobby.NumSpawnedPlayers++;
 
                 //Spawn the battleplayer's pawns
-                for (int i = 0; i < GameManager.instance.numStartingPawns; i++)
+                for (int i = 0; i < GameManager.instance.NumStartingPawns; i++)
                 {
                     GameObject go = Instantiate(lobby.GetPawnPrefab(),
-                        GameManager.instance.worldGen.pawnSpawns[i + ((lobby.NumSpawnedPlayers - 1) * GameManager.instance.numStartingPawns)],
+                        GameManager.instance.WorldGen.PawnSpawns[i + ((lobby.NumSpawnedPlayers - 1) * GameManager.instance.NumStartingPawns)],
                         new Quaternion(0, 0, 0, 0));
                     go.GetComponent<Pawn>().SetOwner(bp.GetComponent<BattlePlayer>());
                     NetworkServer.Spawn(go, this.gameObject);

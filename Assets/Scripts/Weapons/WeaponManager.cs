@@ -21,11 +21,11 @@ public class WeaponManager : MonoBehaviour
 
     void PopulateWithWeapons()
     {
-        for (int i = 0; i < GameManager.GetInstance().weaponList.Count; i++)
+        for (int i = 0; i < GameManager.GetInstance().WeaponList.Count; i++)
         {
-            GameObject go = Instantiate(GameManager.GetInstance().weaponList[i].weaponPrefab, this.transform);
+            GameObject go = Instantiate(GameManager.GetInstance().WeaponList[i].weaponPrefab, this.transform);
             WeaponMotor wep = go.GetComponent<WeaponMotor>();
-            wep.InitalizeWeapon(GameManager.GetInstance().weaponList[i]);
+            wep.InitalizeWeapon(GameManager.GetInstance().WeaponList[i]);
             weapons.Add(wep);
             wep.gameObject.SetActive(false);
         }

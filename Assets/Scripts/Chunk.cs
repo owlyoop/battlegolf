@@ -15,16 +15,16 @@ public class Chunk : MonoBehaviour
     MeshFilter meshFilter;
     MeshCollider meshCollider;
     MeshRenderer meshRend;
-    public GameObject chunkObject;
-    public WorldGenerator world;
+    public GameObject ChunkObject;
+    public WorldGenerator World;
 
-    public GameObject backside;
+    public GameObject Backside;
     MeshRenderer backsideMeshRend;
     MeshFilter backsideMesh;
     Mesh mesh;
 
-    public Vector3 chunkPosition;
-    public Vector3Int chunkGridPosition;
+    public Vector3 ChunkPosition;
+    public Vector3Int ChunkGridPosition;
 
     int width { get { return MarchingCubesData.ChunkWidth; } }
     int height { get { return MarchingCubesData.ChunkHeight; } }
@@ -45,9 +45,9 @@ public class Chunk : MonoBehaviour
 
     Dictionary<int2, int> vertexMap;
 
-    public float[,,] terrainMap;
+    public float[,,] TerrainMap;
 
-    public bool isDirty; //True if the mesh hasnt been updated to match the terrain map values
+    public bool IsDirty; //True if the mesh hasnt been updated to match the terrain map values
     bool smoothTerrain;
     bool flatShading;
 
@@ -56,7 +56,7 @@ public class Chunk : MonoBehaviour
     /// </summary>
     public void Initialize(WorldGenerator world, Vector3 _position, bool _smoothTerrain, bool _flatShading)
     {
-        terrainMap = new float[width + 1, height + 1, width + 1];
+        TerrainMap = new float[width + 1, height + 1, width + 1];
 
         vertexMap = new Dictionary<int2, int>();
 
@@ -67,26 +67,26 @@ public class Chunk : MonoBehaviour
         smoothTerrain = _smoothTerrain;
         flatShading = _flatShading;
 
-        chunkObject = this.gameObject;
-        chunkObject.name = string.Format("Chunk {0}, {1}, {2}", _position.x, _position.y, _position.z);
-        chunkPosition = _position;
-        chunkObject.transform.position = chunkPosition;
-        chunkObject.transform.tag = "Terrain";
-        backside = new GameObject();
-        backside.name = chunkObject.name + " backside";
-        backside.transform.parent = chunkObject.transform;
-        this.world = world;
+        ChunkObject = this.gameObject;
+        ChunkObject.name = string.Format("Chunk {0}, {1}, {2}", _position.x, _position.y, _position.z);
+        ChunkPosition = _position;
+        ChunkObject.transform.position = ChunkPosition;
+        ChunkObject.transform.tag = "Terrain";
+        Backside = new GameObject();
+        Backside.name = ChunkObject.name + " backside";
+        Backside.transform.parent = ChunkObject.transform;
+        this.World = world;
 
-        meshFilter = chunkObject.AddComponent<MeshFilter>();
-        meshCollider = chunkObject.AddComponent<MeshCollider>();
-        meshRend = chunkObject.AddComponent<MeshRenderer>();
-        meshRend.material = world.worldMaterial;
+        meshFilter = ChunkObject.AddComponent<MeshFilter>();
+        meshCollider = ChunkObject.AddComponent<MeshCollider>();
+        meshRend = ChunkObject.AddComponent<MeshRenderer>();
+        meshRend.material = world.WorldMaterial;
         meshRend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.TwoSided;
         mesh = new Mesh();
 
-        backsideMesh = backside.AddComponent<MeshFilter>();
-        backsideMeshRend = backside.AddComponent<MeshRenderer>();
-        backsideMeshRend.material = world.backsideMaterial;
+        backsideMesh = Backside.AddComponent<MeshFilter>();
+        backsideMeshRend = Backside.AddComponent<MeshRenderer>();
+        backsideMeshRend.material = world.BacksideMaterial;
 
         this.gameObject.layer = 10;
 
@@ -111,7 +111,7 @@ public class Chunk : MonoBehaviour
             {
                 for (int z = 0; z < width +1; z++)
                 {
-                    terMap[x * 17 * 17 + y * 17 + z] = terrainMap[x, y, z];
+                    terMap[x * 17 * 17 + y * 17 + z] = TerrainMap[x, y, z];
                 }
             }
         }
@@ -122,8 +122,8 @@ public class Chunk : MonoBehaviour
         {
             numVoxelsHeight = height,
             numVoxelsWidth = width,
-            surfaceLevel = world.surfaceLevel,
-            smoothTerrain = world.smoothTerrain,
+            surfaceLevel = World.SurfaceLevel,
+            smoothTerrain = World.SmoothTerrain,
             VertexCountCounter = vertexCountCounter,
             jobVertices = vertices,
             terMap = terMap
@@ -210,11 +210,11 @@ public class Chunk : MonoBehaviour
             {
                 for (int z = 0; z < width + 1; z++)
                 {
-                    thisPoint = world.worldGraph.endNode.GenerateTerrainMap(new Vector3(x + chunkPosition.x * world.voxelsPerMeter
-                        , y + chunkPosition.y * world.voxelsPerMeter
-                        , z + chunkPosition.z * world.voxelsPerMeter));
+                    thisPoint = World.WorldGraph.endNode.GenerateTerrainMap(new Vector3(x + ChunkPosition.x * World.VoxelsPerMeter
+                        , y + ChunkPosition.y * World.VoxelsPerMeter
+                        , z + ChunkPosition.z * World.VoxelsPerMeter));
 
-                    terrainMap[x, y, z] = thisPoint;
+                    TerrainMap[x, y, z] = thisPoint;
                 }
             }
         }
@@ -272,10 +272,10 @@ public class Chunk : MonoBehaviour
 
         //tmap length is 17
 
-        terrainMap[x, y, z] += newTerrainValue;
+        TerrainMap[x, y, z] += newTerrainValue;
 
         int border = 0;
-        Vector3Int newGridPos = chunkGridPosition;
+        Vector3Int newGridPos = ChunkGridPosition;
         int xlocal = -1;
         int ylocal = -1;
         int zlocal = -1;
@@ -320,42 +320,42 @@ public class Chunk : MonoBehaviour
             border++;
         }
 
-        if (newGridPos.x < 0 || newGridPos.x > world.numChunksWidth || newGridPos.y < 0 || newGridPos.y > world.numChunksHeight || newGridPos.z < 0 || newGridPos.z > world.numChunksLength)
+        if (newGridPos.x < 0 || newGridPos.x > World.NumChunksWidth || newGridPos.y < 0 || newGridPos.y > World.NumChunksHeight || newGridPos.z < 0 || newGridPos.z > World.NumChunksLength)
             isvalid = false;
 
         if (border == 1 && isvalid)
         {
             if (xlocal != -1)
             {
-                AlterBorderChunk(newGridPos.x, chunkGridPosition.y, chunkGridPosition.z, xlocal, y, z, newTerrainValue, updateMesh);
+                AlterBorderChunk(newGridPos.x, ChunkGridPosition.y, ChunkGridPosition.z, xlocal, y, z, newTerrainValue, updateMesh);
             }                                                            
             else if (ylocal != -1)                                        
             {
-                AlterBorderChunk(chunkGridPosition.x, newGridPos.y, chunkGridPosition.z, x, ylocal, z, newTerrainValue, updateMesh);
+                AlterBorderChunk(ChunkGridPosition.x, newGridPos.y, ChunkGridPosition.z, x, ylocal, z, newTerrainValue, updateMesh);
             }                                                            
             else if (zlocal != -1)                                        
             {
-                AlterBorderChunk(chunkGridPosition.x, chunkGridPosition.y, newGridPos.z, x, y, zlocal, newTerrainValue, updateMesh);
+                AlterBorderChunk(ChunkGridPosition.x, ChunkGridPosition.y, newGridPos.z, x, y, zlocal, newTerrainValue, updateMesh);
             }
         }
         else if (border == 2 && isvalid)
         {
             if (xlocal == -1)
             {
-                AlterBorderChunk(newGridPos.x, newGridPos.y, chunkGridPosition.z, x, ylocal, z, newTerrainValue, updateMesh);
-                AlterBorderChunk(newGridPos.x, chunkGridPosition.y, newGridPos.z, x, y, zlocal, newTerrainValue, updateMesh);
+                AlterBorderChunk(newGridPos.x, newGridPos.y, ChunkGridPosition.z, x, ylocal, z, newTerrainValue, updateMesh);
+                AlterBorderChunk(newGridPos.x, ChunkGridPosition.y, newGridPos.z, x, y, zlocal, newTerrainValue, updateMesh);
                 AlterBorderChunk(newGridPos.x, newGridPos.y, newGridPos.z, x, ylocal, zlocal, newTerrainValue, updateMesh);
             }
             else if (ylocal == -1)
             {
-                AlterBorderChunk(newGridPos.x, newGridPos.y, chunkGridPosition.z, xlocal, y, z, newTerrainValue, updateMesh);
-                AlterBorderChunk(chunkGridPosition.x, newGridPos.y, newGridPos.z, x, y, zlocal, newTerrainValue, updateMesh);
+                AlterBorderChunk(newGridPos.x, newGridPos.y, ChunkGridPosition.z, xlocal, y, z, newTerrainValue, updateMesh);
+                AlterBorderChunk(ChunkGridPosition.x, newGridPos.y, newGridPos.z, x, y, zlocal, newTerrainValue, updateMesh);
                 AlterBorderChunk(newGridPos.x, newGridPos.y, newGridPos.z, xlocal, y, zlocal, newTerrainValue, updateMesh);
             }
             else if (zlocal == -1)
             {
-                AlterBorderChunk(newGridPos.x, chunkGridPosition.y, newGridPos.z, xlocal, y, z, newTerrainValue, updateMesh);
-                AlterBorderChunk(chunkGridPosition.x, newGridPos.y, newGridPos.z, x, ylocal, z, newTerrainValue, updateMesh);
+                AlterBorderChunk(newGridPos.x, ChunkGridPosition.y, newGridPos.z, xlocal, y, z, newTerrainValue, updateMesh);
+                AlterBorderChunk(ChunkGridPosition.x, newGridPos.y, newGridPos.z, x, ylocal, z, newTerrainValue, updateMesh);
                 AlterBorderChunk(newGridPos.x, newGridPos.y, newGridPos.z, xlocal, ylocal, z, newTerrainValue, updateMesh);
             }
         }
@@ -363,24 +363,24 @@ public class Chunk : MonoBehaviour
         {
             AlterBorderChunk(newGridPos.x,newGridPos.y, newGridPos.z, xlocal, ylocal, zlocal, newTerrainValue, updateMesh);
 
-            AlterBorderChunk(newGridPos.x, chunkGridPosition.y, chunkGridPosition.z, xlocal, y, z, newTerrainValue, updateMesh);
-            AlterBorderChunk(chunkGridPosition.x, newGridPos.y, chunkGridPosition.z, x, ylocal, z, newTerrainValue, updateMesh);
-            AlterBorderChunk(chunkGridPosition.x, chunkGridPosition.y, newGridPos.z, x, y, zlocal, newTerrainValue, updateMesh);
+            AlterBorderChunk(newGridPos.x, ChunkGridPosition.y, ChunkGridPosition.z, xlocal, y, z, newTerrainValue, updateMesh);
+            AlterBorderChunk(ChunkGridPosition.x, newGridPos.y, ChunkGridPosition.z, x, ylocal, z, newTerrainValue, updateMesh);
+            AlterBorderChunk(ChunkGridPosition.x, ChunkGridPosition.y, newGridPos.z, x, y, zlocal, newTerrainValue, updateMesh);
 
-            AlterBorderChunk(newGridPos.x, newGridPos.y, chunkGridPosition.z, xlocal, ylocal, z, newTerrainValue, updateMesh);
-            AlterBorderChunk(newGridPos.x, chunkGridPosition.y, newGridPos.z, xlocal, y, zlocal, newTerrainValue, updateMesh);
-            AlterBorderChunk(chunkGridPosition.x, newGridPos.y, newGridPos.z, x, ylocal, zlocal, newTerrainValue, updateMesh);
+            AlterBorderChunk(newGridPos.x, newGridPos.y, ChunkGridPosition.z, xlocal, ylocal, z, newTerrainValue, updateMesh);
+            AlterBorderChunk(newGridPos.x, ChunkGridPosition.y, newGridPos.z, xlocal, y, zlocal, newTerrainValue, updateMesh);
+            AlterBorderChunk(ChunkGridPosition.x, newGridPos.y, newGridPos.z, x, ylocal, zlocal, newTerrainValue, updateMesh);
         }
 
         if (updateMesh)
         {
             //voxel.chunk.CreateMeshData();
-            world.chunkGrid[voxel.index.x, voxel.index.y, voxel.index.z].CreateMeshData();
+            World.ChunkGrid[voxel.index.x, voxel.index.y, voxel.index.z].CreateMeshData();
         }
         else
         {
             //voxel.chunk.isDirty = true;
-            world.chunkGrid[voxel.index.x, voxel.index.y, voxel.index.z].isDirty = true;
+            World.ChunkGrid[voxel.index.x, voxel.index.y, voxel.index.z].IsDirty = true;
         }
     }
 
@@ -388,15 +388,15 @@ public class Chunk : MonoBehaviour
     {
         // Chunk ch = world.chunkGrid[chunkGridX, chunkGridY, chunkGridZ];
 
-        world.chunkGrid[chunkGridX, chunkGridY, chunkGridZ].terrainMap[localX, localY, localZ] += newTerrainValue;
+        World.ChunkGrid[chunkGridX, chunkGridY, chunkGridZ].TerrainMap[localX, localY, localZ] += newTerrainValue;
 
         if (updateMesh)
         {
-            world.chunkGrid[chunkGridX, chunkGridY, chunkGridZ].CreateMeshData();
+            World.ChunkGrid[chunkGridX, chunkGridY, chunkGridZ].CreateMeshData();
         }
         else
         {
-            world.chunkGrid[chunkGridX, chunkGridY, chunkGridZ].isDirty = true;
+            World.ChunkGrid[chunkGridX, chunkGridY, chunkGridZ].IsDirty = true;
         }
     }
 
@@ -540,10 +540,10 @@ public class Chunk : MonoBehaviour
     //TODO: test if it even works
     public float GetTerrainMapValueFromWorldPos(Vector3 pos)
     {
-        Vector3 localPos = pos - chunkPosition;
-        Vector3Int tMap = new Vector3Int((int)Mathf.Round(localPos.x * world.voxelsPerMeter), (int)Mathf.Round(localPos.y * world.voxelsPerMeter), (int)Mathf.Round(localPos.z * world.voxelsPerMeter));
+        Vector3 localPos = pos - ChunkPosition;
+        Vector3Int tMap = new Vector3Int((int)Mathf.Round(localPos.x * World.VoxelsPerMeter), (int)Mathf.Round(localPos.y * World.VoxelsPerMeter), (int)Mathf.Round(localPos.z * World.VoxelsPerMeter));
 
-        return terrainMap[tMap.x, tMap.y, tMap.z];
+        return TerrainMap[tMap.x, tMap.y, tMap.z];
     }
 
     //TODO: Delete this but save it somewhere for reference
@@ -585,9 +585,9 @@ public class Chunk : MonoBehaviour
                     float difference = vert2Sample - vert1Sample;
 
                     if (difference == 0)
-                        difference = world.surfaceLevel;
+                        difference = World.SurfaceLevel;
                     else
-                        difference = (world.surfaceLevel - vert1Sample) / difference;
+                        difference = (World.SurfaceLevel - vert1Sample) / difference;
 
                     vertPosition = vert1 + ((Vector3)(vert2 - vert1) * difference);
 
@@ -639,7 +639,7 @@ public class Chunk : MonoBehaviour
                 {
                     vertexMap.Add(vertexCopy[i].edgeID, triIndex);
                 }
-                processedVertices.Add(vertexCopy[i].position / world.voxelsPerMeter);
+                processedVertices.Add(vertexCopy[i].position / World.VoxelsPerMeter);
                 processedTriangles.Add(triIndex);
                 triIndex++;
             }
@@ -649,7 +649,7 @@ public class Chunk : MonoBehaviour
 
     int indexFromCoord(Vector3Int coord)
     {
-        coord = coord - (chunkGridPosition * 17);
+        coord = coord - (ChunkGridPosition * 17);
         return coord.z * 17 * 17 + coord.y * 17 + coord.x;
     }
 
@@ -673,7 +673,7 @@ public class Chunk : MonoBehaviour
         int index = 0;
         for (int i = 0; i < 8; i++)
         {
-            if (cube[i] < world.surfaceLevel)
+            if (cube[i] < World.SurfaceLevel)
                 index |= 1 << i;
         }
 

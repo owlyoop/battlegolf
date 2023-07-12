@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af256d137f048dd429cb7fd10a1ab615, type: 3}
   m_Name: ProjectileCamSettings
   m_EditorClassIdentifier: 
-  followPointFraming: {x: 0, y: -1}
-  followSharpness: 10
-  defaultDistance: 4
-  minDistance: 4
-  maxDistance: 4
-  distanceMovespeed: 4
-  distanceMoveSharpness: 4
+  FollowPointFraming: {x: 0, y: 0}
+  FollowSharpness: 32
+  DefaultDistance: 4
+  MinDistance: 4
+  MaxDistance: 4
+  TargetDistance: 4
+  DistanceMovespeed: 32
+  DistanceMoveSharpness: 32

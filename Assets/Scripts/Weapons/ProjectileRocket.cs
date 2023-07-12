@@ -10,7 +10,7 @@ public class ProjectileRocket : Projectile
 
     private void Start()
     {
-        rb.AddForce(transform.forward * launchStrength, ForceMode.VelocityChange);
+        rb.AddForce(transform.forward * LaunchStrength, ForceMode.VelocityChange);
     }
 
     private void Update()

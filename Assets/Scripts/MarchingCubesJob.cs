@@ -44,15 +44,9 @@ public struct MarchingCubesJob : IJob
         return index;
     }
 
-    void CalcuateCubeIndex()
-    {
-
-    }
-
     void MarchCube(Vector3Int position, VoxelCorners<float> cube)
     {
         int configIndex = GetCubeConfig(densities);
-        //Debug.Log(configIndex);
 
         //These 2 configs means that the cube has no triangles
         if (configIndex == 0 || configIndex == 255)
@@ -138,11 +132,9 @@ public struct MarchingCubesJob : IJob
 
                     for (int i = 0; i < 8; i++)
                     {
-                        //Flat[x * height * depth + y * depth + z] = elements[x][y][z]
                         densities[i] = terMap[((x + MarchingCubesData.CornerTable[i].x) * 17 * 17) + 
                             ((y + MarchingCubesData.CornerTable[i].y) * 17) + 
                             z + MarchingCubesData.CornerTable[i].z];
-                        //Debug.Log(densities[i].ToString());
                     }
 
                     MarchCube(position, densities);

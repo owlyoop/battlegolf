@@ -21,39 +21,39 @@ public class GameManager : NetworkBehaviour
     }
 
     [Header("Ingame Match Config")]
-    public int numPlayers = 1;
-    public int numStartingPawns = 4;
-    public float turnLengthInSeconds = 45;
+    public int NumPlayers = 1;
+    public int NumStartingPawns = 4;
+    public float TurnLengthInSeconds = 45;
 
     [Header("Current Match Data")]
     [SerializeField, SyncVar] List<BattlePlayer> players = new List<BattlePlayer>();
-    public int turnCounter = 1;
-    public float gameTimer;
-    public Vector3 windDirection;
-    public GameState state;
+    public int TurnCounter = 1;
+    public float GameTimer;
+    public Vector3 WindDirection;
+    public GameState State;
 
     [SyncVar]
-    public BattlePlayer currentPlayersTurn;
+    public BattlePlayer CurrentPlayersTurn;
 
     [Header("References")]
-    public WorldGenerator worldGen;
-    public Transform worldCenterPoint;
+    public WorldGenerator WorldGen;
+    public Transform WorldCenterPoint;
     BattlegolfNetworkManager lobby;
-    public WorldNetworkCalls worldNetwork;
+    public WorldNetworkCalls WorldNetwork;
 
     [Header("Game Data")]
-    public GameObject playerOverviewPrefab;
-    public GameObject pawnPrefab;
-    public GameObject playerCamPrefab;
-    public List<Weapon> weaponList; //TODO: Verify the weapon list to make sure there's no duplicates
-    public List<Item> itemPrefabList;
+    public GameObject PlayerOverviewPrefab;
+    public GameObject PawnPrefab;
+    public GameObject PlayerCamPrefab;
+    public List<Weapon> WeaponList; //TODO: Verify the weapon list to make sure there's no duplicates
+    public List<Item> ItemPrefabList;
     
     private void Awake()
     {
         instance = this;
-        worldGen = FindObjectOfType<WorldGenerator>();
-        worldNetwork = GetComponent<WorldNetworkCalls>();
-        worldNetwork.worldGen = worldGen;
+        WorldGen = FindObjectOfType<WorldGenerator>();
+        WorldNetwork = GetComponent<WorldNetworkCalls>();
+        WorldNetwork.worldGen = WorldGen;
     }
 
     private void Start()
@@ -75,14 +75,14 @@ public class GameManager : NetworkBehaviour
     {
         if (NetworkManager.singleton is BattlegolfNetworkManager l)
             lobby = l;
-        state = GameState.WaitingForWorldGeneration;
-        worldGen.GenerateWorld(numPlayers * numStartingPawns);
+        State = GameState.WaitingForWorldGeneration;
+        WorldGen.GenerateWorld(numPlayers * NumStartingPawns);
         
     }
 
     public void ChangeGameState(GameState newState)
     {
-        OnChangeFromState(state);
+        OnChangeFromState(State);
         OnChangeToState(newState);
     }
 
@@ -152,12 +152,12 @@ public class GameManager : NetworkBehaviour
 
     void SetActivePlayer(BattlePlayer player)
     {
-        currentPlayersTurn = player;
+        CurrentPlayersTurn = player;
         player.OnStartTurn();
     }
 
     void EndTurn()
     {
-        turnCounter++;
+        TurnCounter++;
     }
 }

@@ -7,8 +7,8 @@ public static class MarchingCubesData
     public static int ChunkWidth = 16;
     public static int ChunkHeight = 16;
 
-    public static Vector3Int[] CornerTable = new Vector3Int[8] {
-
+    public static Vector3Int[] CornerTable = new Vector3Int[8] 
+    {
         new Vector3Int(0, 0, 0),
         new Vector3Int(1, 0, 0),
         new Vector3Int(1, 1, 0),

@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class ProjectileLauncher : WeaponMotor
 {
-    public Projectile projectilePrefab;
+    public Projectile ProjectilePrefab;
 
     float projForce = 0; // 0 to 100;
     bool forceIncreasing = true;
@@ -16,8 +16,8 @@ public class ProjectileLauncher : WeaponMotor
     float powerRate = 100;
     float curveRate = 100;
 
-    public AnimationCurve powerBar;
-    public AnimationCurve curveBar;
+    public AnimationCurve PowerBar;
+    public AnimationCurve CurveBar;
 
     public enum WeaponState
     {
@@ -47,7 +47,7 @@ public class ProjectileLauncher : WeaponMotor
         {
             var t = Time.deltaTime;
 
-            shooter.owner.ui.ingameHUD.projectileForce.SetText(projForce.ToString("0.00"));
+            shooter.Owner.UI.ingameHUD.projectileForce.SetText(projForce.ToString("0.00"));
 
             if (forceIncreasing)
             {
@@ -90,7 +90,7 @@ public class ProjectileLauncher : WeaponMotor
 
     void OnPawnSelected()
     {
-        shooter = weaponManager.GetPlayer().selectedPawn;
+        shooter = weaponManager.GetPlayer().SelectedPawn;
         wepState = WeaponState.WaitingForPrimaryFire;
         forceIncreasing = true;
         curveIncreasing = true;
@@ -100,7 +100,7 @@ public class ProjectileLauncher : WeaponMotor
 
     public void FireProjectile()
     {
-        weaponManager.GetPlayer().networkCalls.CmdFireProjectile(2, gunEnd.position, gunEnd.rotation, projForce / 100f, projCurve / 100f, weaponManager.GetPlayer().selectedPawn.gameObject);
+        weaponManager.GetPlayer().NetworkCalls.CmdFireProjectile(2, gunEnd.position, gunEnd.rotation, projForce / 100f, projCurve / 100f, weaponManager.GetPlayer().SelectedPawn.gameObject);
         wepState = WeaponState.WaitingForPrimaryFire;
 
         projForce = 0;

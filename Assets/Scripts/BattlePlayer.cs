@@ -9,29 +9,29 @@ public class BattlePlayer : NetworkBehaviour
     public string playerName;
 
     [SyncVar]
-    public List<Pawn> ownedPawns = new List<Pawn>();
+    public List<Pawn> OwnedPawns = new List<Pawn>();
 
     [SyncVar]
     int selectedPawnIndex = 0;
 
     [SyncVar]
-    public bool isReadyToBegin = false;
+    public bool IsReadyToBegin = false;
 
-    public Pawn selectedPawn;
-    public bool hasPawnSelected = false;
-
-    [SyncVar]
-    public bool isTurn;
-
-    public GameObject overviewController;
-    public WeaponManager weaponManager { get; private set; }
-    public CameraController cam { get; private set; }
-    public UIManager ui { get; private set; }
-    public PlayerInput playerInput { get; private set; }
-    public PlayerNetworkCalls networkCalls { get; private set; }
+    public Pawn SelectedPawn;
+    public bool HasPawnSelected = false;
 
     [SyncVar]
-    public PlayerManager manager;
+    public bool IsTurn;
+
+    public GameObject OverviewController;
+    public WeaponManager WepManager { get; private set; }
+    public CameraController Cam { get; private set; }
+    public UIManager UI { get; private set; }
+    public PlayerInput PlayerInputManager { get; private set; }
+    public PlayerNetworkCalls NetworkCalls { get; private set; }
+
+    [SyncVar]
+    public PlayerManager Manager;
 
     
 
@@ -43,24 +43,24 @@ public class BattlePlayer : NetworkBehaviour
 
     private void Awake()
     {
-        playerInput = GetComponent<PlayerInput>();
-        cam = GetComponent<CameraController>();
-        networkCalls = GetComponent<PlayerNetworkCalls>();
-        ui = GetComponentInChildren<UIManager>();
-        ui.gameObject.SetActive(false);
-        weaponManager = GetComponentInChildren<WeaponManager>();
+        PlayerInputManager = GetComponent<PlayerInput>();
+        Cam = GetComponent<CameraController>();
+        NetworkCalls = GetComponent<PlayerNetworkCalls>();
+        UI = GetComponentInChildren<UIManager>();
+        UI.gameObject.SetActive(false);
+        WepManager = GetComponentInChildren<WeaponManager>();
 
-        GameObject overview = Instantiate(overviewController);
-        overviewController = overview;
+        GameObject overview = Instantiate(OverviewController);
+        OverviewController = overview;
 
-        playerInput.SetOverviewController(overviewController.GetComponent<PawnController>());
-        playerInput.worldOverviewControl.TransitionToState(CharacterState.WorldOverview);
+        PlayerInputManager.SetOverviewController(OverviewController.GetComponent<PawnController>());
+        PlayerInputManager.WorldOverviewControl.TransitionToState(CharacterState.WorldOverview);
     }
 
     public void SetManager(PlayerManager manager)
     {
         //this.GetComponent<PlayerInput>().worldOverviewControl = this.overviewController.GetComponent<PawnController>();
-        this.manager = manager;
+        this.Manager = manager;
     }
 
     public override void OnStartClient()
@@ -75,14 +75,14 @@ public class BattlePlayer : NetworkBehaviour
 
     public void PrimaryFireWeapon()
     {
-        weaponManager.GetCurrentWeapon().PrimaryFire();
+        WepManager.GetCurrentWeapon().PrimaryFire();
     }
 
     public void SetSelectedPawn(int index)
     {
-        if (index > ownedPawns.Count - 1)
+        if (index > OwnedPawns.Count - 1)
         {
-            index = ownedPawns.Count - 1;
+            index = OwnedPawns.Count - 1;
         }
         if (index < 0)
         {
@@ -93,79 +93,83 @@ public class BattlePlayer : NetworkBehaviour
     public void SelectNextPawn()
     {
         selectedPawnIndex++;
-        if (selectedPawnIndex > ownedPawns.Count - 1)
+        if (selectedPawnIndex > OwnedPawns.Count - 1)
         {
             selectedPawnIndex = 0;
         }
 
-        if (selectedPawn != null)
+        if (SelectedPawn != null)
         {
-            selectedPawn.OnDeselected();
+            SelectedPawn.OnDeselected();
         }
 
-        selectedPawn = ownedPawns[selectedPawnIndex];
-        selectedPawn.OnSelected();
+        SelectedPawn = OwnedPawns[selectedPawnIndex];
+        SelectedPawn.OnSelected();
 
         if (OnPawnSelected != null)
             OnPawnSelected();
 
-        cam.SetFollowTransform(selectedPawn.transform);
-        cam.FollowTransform.localPosition = selectedPawn.cameraTarget.localPosition;
+        Cam.SetFollowTransform(SelectedPawn.transform);
+        Cam.FollowTransform.localPosition = SelectedPawn.CameraTarget.localPosition;
     }
 
+    public Pawn GetSelectedPawn()
+    {
+        return SelectedPawn;
+    }
 
     public void SelectPreviousPawn()
     {
         selectedPawnIndex--;
         if(selectedPawnIndex < 0)
         {
-            selectedPawnIndex = ownedPawns.Count - 1;
+            selectedPawnIndex = OwnedPawns.Count - 1;
         }
-        if (selectedPawn != null)
+        if (SelectedPawn != null)
         {
-            selectedPawn.OnDeselected();
+            SelectedPawn.OnDeselected();
         }
 
-        selectedPawn = ownedPawns[selectedPawnIndex];
-        selectedPawn.OnSelected();
+        SelectedPawn = OwnedPawns[selectedPawnIndex];
+        SelectedPawn.OnSelected();
 
         if (OnPawnSelected != null)
             OnPawnSelected();
 
-        cam.SetFollowTransform(selectedPawn.transform);
-        cam.FollowTransform.localPosition = selectedPawn.cameraTarget.localPosition;
+        Cam.SetFollowTransform(SelectedPawn.transform);
+        Cam.FollowTransform.localPosition = SelectedPawn.CameraTarget.localPosition;
     }
 
     public void SelectPawnByIndex(int index)
     {
-        if(index >= ownedPawns.Count)
+        if(index >= OwnedPawns.Count)
         {
             //TODO: throw error
         }
-        selectedPawn = ownedPawns[index];
-        selectedPawn.OnSelected();
+        SelectedPawn = OwnedPawns[index];
+        SelectedPawn.OnSelected();
 
         if (OnPawnSelected != null)
             OnPawnSelected();
 
-        cam.SetFollowTransform(selectedPawn.transform);
-        cam.FollowTransform.localPosition = selectedPawn.cameraTarget.localPosition;
+        Cam.SetFollowTransform(SelectedPawn.transform);
+        Cam.FollowTransform.localPosition = SelectedPawn.CameraTarget.localPosition;
     }
 
     public void OnStartTurn()
     {
-        isTurn = true;
+        IsTurn = true;
 
     }
 
     public void OnEndTurn()
     {
-        isTurn = false;
+        IsTurn = false;
     }
 
     public void OnNetworkSpawn()
     {
-        if (manager.isLocalPlayer)
-            ui.gameObject.SetActive(true);
+        if (Manager.isLocalPlayer)
+            UI.gameObject.SetActive(true);
     }
 }

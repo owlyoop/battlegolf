@@ -15,31 +15,31 @@ public class Pawn : NetworkBehaviour
     }
 
     [SyncVar]
-    public BattlePlayer owner;
+    public BattlePlayer Owner;
 
     public Collider col;
-    public PawnController controller;
+    public PawnController Controller;
 
-    public Transform cameraTarget;
-    public Transform weaponParent;
+    public Transform CameraTarget;
+    public Transform WeaponParent;
 
-    public WeaponManager weaponManager;
+    public WeaponManager WepManager;
 
-    public float health = 100f;
+    public float Health = 100f;
 
-    public bool isSelected;
+    public bool IsSelected;
 
     [SyncVar]
     public uint IdOfBattlePlayer;
 
     private void Start()
     {
-        if (owner != null && owner.manager != null)
+        if (Owner != null && Owner.Manager != null)
         {
-            if(owner.manager.isLocalPlayer)
+            if(Owner.Manager.isLocalPlayer)
             {
-                controller = GetComponent<PawnController>();
-                weaponManager = owner.weaponManager;
+                Controller = GetComponent<PawnController>();
+                WepManager = Owner.WepManager;
             }
         }
     }
@@ -47,30 +47,30 @@ public class Pawn : NetworkBehaviour
     //TODO: implement
     public void SetOwner(BattlePlayer owner)
     {
-        owner.ownedPawns.Add(this);
-        this.owner = owner;
+        owner.OwnedPawns.Add(this);
+        this.Owner = owner;
         
     }
 
     private void LateUpdate()
     {
-        if (isSelected && owner.manager.isLocalPlayer)
+        if (IsSelected && Owner.Manager.isLocalPlayer)
         {
-            weaponParent.rotation = owner.cam.transform.rotation;
+            WeaponParent.rotation = Owner.Cam.transform.rotation;
         }
     }
 
     public void OnSelected()
     {
-        isSelected = true;
-        weaponManager.transform.SetParent(weaponParent);
-        weaponManager.transform.localPosition = Vector3.zero;
-        weaponManager.transform.localRotation = new Quaternion(0,0,0,0);
-        weaponManager.EnableWeapon(0);
+        IsSelected = true;
+        WepManager.transform.SetParent(WeaponParent);
+        WepManager.transform.localPosition = Vector3.zero;
+        WepManager.transform.localRotation = new Quaternion(0,0,0,0);
+        WepManager.EnableWeapon(0);
     }
 
     public void OnDeselected()
     {
-        isSelected = false;
+        IsSelected = false;
     }
 }

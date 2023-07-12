@@ -25,6 +25,6 @@ public class WorldNetworkCalls : NetworkBehaviour
         GameObject explosion = Instantiate(Resources.Load<GameObject>("Prefabs/Weapons/Explosion"), pos, new Quaternion(0, 0, 0, 0));
         Explosion exp = explosion.GetComponent<Explosion>();
         exp.radius = radius;
-        GetComponent<GameManager>().worldGen.AlterTerrainRadius(pos, isDigging, amount, radius, exp.GetComponent<Explosion>());
+        GetComponent<GameManager>().WorldGen.AlterTerrainRadius(pos, isDigging, amount, radius, exp.GetComponent<Explosion>());
     }
 }
