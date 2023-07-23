@@ -1,4 +1,5 @@
 ﻿using Mirror;
+using System.Collections;
 using UnityEngine;
 
 public struct PlayerActionInputs
@@ -145,7 +146,9 @@ public class PlayerInput : NetworkBehaviour
                     player.SelectPawnByIndex(0);
                 }
                 currentControlledPawn = player.SelectedPawn.Controller;
-                ChangeCameraConfig(InputState.ControllingPawn);
+                cam.ChangeCameraSettings(PawnCamSettings);
+                //StartCoroutine(ChangeCameraConfigWithDelay(InputState.ControllingPawn, 1f));
+                //ChangeCameraConfig(InputState.ControllingPawn);
                 break;
 
             case InputState.SelectingPawn:
@@ -159,13 +162,38 @@ public class PlayerInput : NetworkBehaviour
 
     }
 
+    IEnumerator ChangeCameraConfigWithDelay(InputState state, float time)
+    {
+        yield return new WaitForSeconds(time);
+        switch (state)
+        {
+            case InputState.ControllingPawn:
+                CopyCamSettings(PawnCamSettings, cam);
+                cam.FollowTransform = currentControlledPawn.transform;
+                break;
+
+            case InputState.WorldOverview:
+                CopyCamSettings(OverviewCamSettings, cam);
+                cam.SetFollowTransform(WorldOverviewControl.CameraFollowPoint);
+                break;
+
+            case InputState.SelectingPawn:
+                CopyCamSettings(SelectingPawnCamSettings, cam);
+                if (player.OwnedPawns != null && player.OwnedPawns.Count > 0)
+                    cam.SetFollowTransform(player.OwnedPawns[player.GetSelectedPawnIndex()].transform);
+                break;
+            default:
+                break;
+        }
+    }
+
     void ChangeCameraConfig(InputState state)
     {
         switch (state)
         {
             case InputState.ControllingPawn:
                 CopyCamSettings(PawnCamSettings, cam);
-                cam.SetFollowTransform(currentControlledPawn.transform);
+                cam.FollowTransform = currentControlledPawn.transform;
                 break;
 
             case InputState.WorldOverview:

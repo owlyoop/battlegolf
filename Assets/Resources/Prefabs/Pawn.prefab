@@ -185,14 +185,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
-  owner: {fileID: 0}
+  Owner: {fileID: 0}
   col: {fileID: 1845353400548274471}
-  controller: {fileID: 636109112457808826}
-  cameraTarget: {fileID: 1758668496302860975}
-  weaponParent: {fileID: 2604957015649686442}
-  weaponManager: {fileID: 0}
-  health: 100
-  isSelected: 0
+  Controller: {fileID: 636109112457808826}
+  CameraTarget: {fileID: 1758668496302860975}
+  WeaponParent: {fileID: 2604957015649686442}
+  WepManager: {fileID: 0}
+  Health: 100
+  IsSelected: 0
   IdOfBattlePlayer: 0
 --- !u!114 &636109112457808826
 MonoBehaviour:

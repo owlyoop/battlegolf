@@ -55,13 +55,13 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0.1
   playerName: 
-  ownedPawns: []
-  isReadyToBegin: 0
-  selectedPawn: {fileID: 0}
-  hasPawnSelected: 0
-  isTurn: 0
-  overviewController: {fileID: 1730827953740630876, guid: 7e1085882807dc04f9e89638e5f82992, type: 3}
-  manager: {fileID: 0}
+  OwnedPawns: []
+  IsReadyToBegin: 0
+  SelectedPawn: {fileID: 0}
+  HasPawnSelected: 0
+  IsTurn: 0
+  OverviewControllerPrefab: {fileID: 1730827953740630876, guid: 7e1085882807dc04f9e89638e5f82992, type: 3}
+  Manager: {fileID: 0}
 --- !u!20 &6688587034338020108
 Camera:
   m_ObjectHideFlags: 0
@@ -155,11 +155,11 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0.1
   worldCameraSpeed: 2
-  pawnCamSettings: {fileID: 11400000, guid: 6a7d2599f8707df4bad403da29cd5cae, type: 2}
-  overviewCamSettings: {fileID: 11400000, guid: 06cbaca5ede29764a92eae860051c6a4, type: 2}
-  selectingPawnCamSettings: {fileID: 11400000, guid: bbd832711d2ba404aa80695c7401c0f7, type: 2}
-  projectileCamSettings: {fileID: 11400000, guid: 2c71e02b5e358ff419db2403e6a071d3, type: 2}
-  explosionPrefab: {fileID: 8807256701999687853, guid: f4b4924f6ea459b41b7d6a3d33885f18, type: 3}
+  PawnCamSettings: {fileID: 11400000, guid: 6a7d2599f8707df4bad403da29cd5cae, type: 2}
+  OverviewCamSettings: {fileID: 11400000, guid: 06cbaca5ede29764a92eae860051c6a4, type: 2}
+  SelectingPawnCamSettings: {fileID: 11400000, guid: bbd832711d2ba404aa80695c7401c0f7, type: 2}
+  ProjectileCamSettings: {fileID: 11400000, guid: 2c71e02b5e358ff419db2403e6a071d3, type: 2}
+  ExplosionPrefab: {fileID: 8807256701999687853, guid: f4b4924f6ea459b41b7d6a3d33885f18, type: 3}
 --- !u!114 &779965568640847088
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using Unity.VisualScripting;
 
 public class CameraController : MonoBehaviour
 {
@@ -82,7 +83,8 @@ public class CameraController : MonoBehaviour
     
     public void ChangeCameraSettings(CameraSettings settings)
     {
-        FollowPointFraming = settings.FollowPointFraming;
+        //FollowPointFraming = settings.FollowPointFraming;
+        StartCoroutine(ChangeFramingOverTime(settings.FollowPointFraming.x, settings.FollowPointFraming.y)); //TODO: Stop this coroutine once it finishes
         FollowingSharpness = settings.FollowSharpness;
         DefaultDistance = settings.DefaultDistance;
         MinDistance = settings.MinDistance;
@@ -90,6 +92,58 @@ public class CameraController : MonoBehaviour
         TargetDistance = settings.TargetDistance;
         DistanceMovementSpeed = settings.DistanceMovespeed;
         DistanceMovementSharpness = settings.DistanceMoveSharpness;
+    }
+
+    IEnumerator ChangeFramingOverTime(float goalX, float goalY)
+    {
+        float rate = 0.00075f;
+        float accel = 1.004f;
+
+        while (FollowPointFraming.x != goalX)
+        {
+            if (FollowPointFraming.x > goalX)
+            {
+                FollowPointFraming.x -= rate;
+                rate *= accel;
+                if (FollowPointFraming.x < goalX) FollowPointFraming.x = goalX;
+                yield return null;
+            }
+            else if (FollowPointFraming.x < goalX)
+            {
+                FollowPointFraming.x += rate;
+                rate *= accel;
+                if (FollowPointFraming.x > goalX) FollowPointFraming.x = goalX;
+                yield return null;
+            }
+
+            if (FollowPointFraming.y > goalY)
+            {
+                FollowPointFraming.y -= rate;
+                rate *= accel;
+                if (FollowPointFraming.y < goalY) FollowPointFraming.y = goalY;
+                yield return null;
+            }
+            else if (FollowPointFraming.y < goalY)
+            {
+                FollowPointFraming.y += rate;
+                rate *= accel;
+                if (FollowPointFraming.y > goalY) FollowPointFraming.y = goalY;
+                yield return null;
+            }
+        }
+
+    }
+
+    IEnumerator ChangeSharpnessOverTime(float goalSharpness)
+    {
+        if(FollowingSharpness > goalSharpness)
+        {
+            yield return null;
+        }
+        else if (FollowingSharpness < goalSharpness)
+        {
+            yield return null;
+        }
     }
 
     public void UpdateWithInput(float deltaTime, float zoomInput, Vector3 rotationInput)

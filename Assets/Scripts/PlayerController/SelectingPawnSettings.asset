@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SelectingPawnSettings
   m_EditorClassIdentifier: 
   FollowPointFraming: {x: 0, y: 2.5}
-  FollowSharpness: 100
+  FollowSharpness: 4
   DefaultDistance: 2
   MinDistance: 2
   MaxDistance: 24

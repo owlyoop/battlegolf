@@ -23,7 +23,7 @@ public class BattlePlayer : NetworkBehaviour
     [SyncVar]
     public bool IsTurn;
 
-    public GameObject OverviewController;
+    public GameObject OverviewControllerPrefab;
     public WeaponManager WepManager { get; private set; }
     public CameraController Cam { get; private set; }
     public UIManager UI { get; private set; }
@@ -50,10 +50,10 @@ public class BattlePlayer : NetworkBehaviour
         UI.gameObject.SetActive(false);
         WepManager = GetComponentInChildren<WeaponManager>();
 
-        GameObject overview = Instantiate(OverviewController);
-        OverviewController = overview;
+        GameObject overview = Instantiate(OverviewControllerPrefab);
+        OverviewControllerPrefab = overview;
 
-        PlayerInputManager.SetOverviewController(OverviewController.GetComponent<PawnController>());
+        PlayerInputManager.SetOverviewController(OverviewControllerPrefab.GetComponent<PawnController>());
         PlayerInputManager.WorldOverviewControl.TransitionToState(CharacterState.WorldOverview);
     }
 
@@ -109,8 +109,9 @@ public class BattlePlayer : NetworkBehaviour
         if (OnPawnSelected != null)
             OnPawnSelected();
 
-        Cam.SetFollowTransform(SelectedPawn.transform);
-        Cam.FollowTransform.localPosition = SelectedPawn.CameraTarget.localPosition;
+        //Cam.SetFollowTransform(SelectedPawn.transform);
+        Cam.FollowTransform = SelectedPawn.transform;
+        //Cam.FollowTransform.localPosition = SelectedPawn.CameraTarget.localPosition;
     }
 
     public Pawn GetSelectedPawn()
@@ -136,8 +137,9 @@ public class BattlePlayer : NetworkBehaviour
         if (OnPawnSelected != null)
             OnPawnSelected();
 
-        Cam.SetFollowTransform(SelectedPawn.transform);
-        Cam.FollowTransform.localPosition = SelectedPawn.CameraTarget.localPosition;
+        //Cam.SetFollowTransform(SelectedPawn.transform);
+        Cam.FollowTransform = SelectedPawn.transform;
+        //Cam.FollowTransform.localPosition = SelectedPawn.CameraTarget.localPosition;
     }
 
     public void SelectPawnByIndex(int index)
@@ -152,8 +154,9 @@ public class BattlePlayer : NetworkBehaviour
         if (OnPawnSelected != null)
             OnPawnSelected();
 
-        Cam.SetFollowTransform(SelectedPawn.transform);
-        Cam.FollowTransform.localPosition = SelectedPawn.CameraTarget.localPosition;
+        //Cam.SetFollowTransform(SelectedPawn.transform);
+        Cam.FollowTransform = SelectedPawn.transform;
+        //Cam.FollowTransform.localPosition = SelectedPawn.CameraTarget.localPosition;
     }
 
     public void OnStartTurn()

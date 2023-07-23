@@ -207,7 +207,7 @@ MonoBehaviour:
   - {fileID: 4158465570006224752}
   - {fileID: -7243798274439313400}
   endNode: {fileID: -3071379420847539631}
-  noiseGenPoint: {x: 0, y: 0, z: 0}
+  noiseGenPoint: {x: 4, y: 47, z: 99}
 --- !u!114 &4158465570006224752
 MonoBehaviour:
   m_ObjectHideFlags: 0

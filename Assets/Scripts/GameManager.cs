@@ -44,7 +44,6 @@ public class GameManager : NetworkBehaviour
     [Header("Game Data")]
     public GameObject PlayerOverviewPrefab;
     public GameObject PawnPrefab;
-    public GameObject PlayerCamPrefab;
     public List<Weapon> WeaponList; //TODO: Verify the weapon list to make sure there's no duplicates
     public List<Item> ItemPrefabList;
     

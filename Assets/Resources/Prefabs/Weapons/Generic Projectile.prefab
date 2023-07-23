@@ -85,23 +85,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   syncMode: 0
   syncInterval: 0.1
-  lifetime: 99
-  launchStrength: 0
-  gravityStrength: 8
-  maxCurve: 45
-  maxForce: 80
-  curveMultiplier: 1
-  launchDirection: {x: 0, y: 0, z: 0}
-  gravityDirection: {x: 0, y: 0, z: 0}
-  curveDirection: {x: 0, y: 0, z: 0}
-  shooter: {fileID: 0}
+  Lifetime: 15
+  LaunchStrength: 1
+  GravityStrength: 1
+  MaxCurve: 64
+  MaxForce: 80
+  CurveMultiplier: 1
+  LaunchDirection: {x: 0, y: 0, z: 0}
+  GravityDirection: {x: 0, y: 0, z: 0}
+  CurveDirection: {x: 0, y: 0, z: 0}
+  Shooter: {fileID: 0}
   rb: {fileID: 6994052863121143186}
   col: {fileID: 1961287595536486710}
-  explosionPrefab: {fileID: 8807256701999687853, guid: f4b4924f6ea459b41b7d6a3d33885f18, type: 3}
-  cameraFollowPoint: {fileID: 3425722920155149783}
-  validCollisions:
+  ExplosionPrefab: {fileID: 8807256701999687853, guid: f4b4924f6ea459b41b7d6a3d33885f18, type: 3}
+  CameraFollowPoint: {fileID: 3425722920155149783}
+  ValidCollisions:
     serializedVersion: 2
-    m_Bits: 1088
+    m_Bits: 0
 --- !u!135 &1961287595536486710
 SphereCollider:
   m_ObjectHideFlags: 0
