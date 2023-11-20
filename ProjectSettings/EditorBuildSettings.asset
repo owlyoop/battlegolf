@@ -14,4 +14,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/LobbyScene.unity
     guid: 590e14f147369db44801ccbc6751ef4e
+  - enabled: 0
+    path: Assets/Scenes/DebugScene.unity
+    guid: 511d78fc4ddcc7f4e8abf5be929380a0
+  - enabled: 0
+    path: Assets/Scenes/PawnTestingScene.unity
+    guid: d875c5d40b8d1dc4b99d384b374b545f
   m_configObjects: {}

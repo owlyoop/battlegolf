@@ -24,32 +24,11 @@ public abstract class NoiseGeneratorNode : PreviewableNode
         worldGraph = graph as WorldGenGraph;
     }
 
-
-    /*public void GenerateTerrainMap()
-    {
-        for (int x = 0; x < terrainMap.GetLength(0); x++)
-        {
-            for (int y = 0; y < terrainMap.GetLength(1); y++)
-            {
-                for (int z = 0; z < terrainMap.GetLength(2); z++)
-                {
-                    Evaluate(x,y,z);
-                }
-            }
-        }
-    }*/
-
     public abstract float Evaluate(Vector3 point);
 
     public virtual void RandomizeNoiseSeed(int seed)
     {
-        //if (noise != null)
-            Noise.Randomize(seed);
-        //else
-        //{
-            //Init();
-            //noise.Randomize(seed);
-        //}
+        Noise.Randomize(seed);
     }
 
     public override void UpdatePreview()
@@ -58,9 +37,6 @@ public abstract class NoiseGeneratorNode : PreviewableNode
         int s = previewTextureSize;
         Texture2D tex = new Texture2D(s, s);
         float[,] values = new float[s, s];
-
-        //float min = float.PositiveInfinity;
-        //float max = float.NegativeInfinity;
 
         for (int a = 0; a < s; a++)
         {
@@ -75,12 +51,6 @@ public abstract class NoiseGeneratorNode : PreviewableNode
 
                 val = Mathf.Clamp(val, -1f, 1f);
 
-                /*if (val < min)
-                    min = val;
-
-                if (val > max)
-                    max = val;*/
-
                 values[a, b] = val;
             }
         }
@@ -91,7 +61,6 @@ public abstract class NoiseGeneratorNode : PreviewableNode
             for (int y = 0; y < s; y++)
             {
                 float val = values[x, y];
-                //float norm = (val - min) / (max - min);
                 float norm = (val + 1f) / 2f;
                 tex.SetPixel(x,y, new Color(norm, norm, norm, 1f));
             }

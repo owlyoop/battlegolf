@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using XNode;
@@ -58,7 +59,8 @@ public class WorldGenerator : MonoBehaviour
     private void Start()
     {
         steps = 1 / VoxelsPerMeter;
-        GameManagerRef = FindObjectOfType<GameManager>();
+        if (GameManagerRef == null)
+            GameManagerRef = FindObjectOfType<GameManager>();
         DestroyWorldInPlayMode();
     }
 
@@ -321,8 +323,6 @@ public class WorldGenerator : MonoBehaviour
     /// <param name="exp">A curve that changes the strength of the alteration depending on the distance from the center point</param>
     public void AlterTerrainRadius(Vector3 pos, bool isDigging, float amount, float radius, Explosion exp)
     {
-        Chunk centerChunk = GetChunkFromWorldPos(pos);
-
         int rings = Mathf.CeilToInt(radius);
         float distanceFromCenter;
 
@@ -344,8 +344,6 @@ public class WorldGenerator : MonoBehaviour
                     }
                     else
                     {
-                        //var max = (numChunksWidth * MarchingCubesData.ChunkWidth) / 1;
-                        //Debug.Log($"{x} {y} {z} max is {max}");
                         var vox = Voxels[x, y, z];
 
                         distanceFromCenter = Vector3.Distance(pos, vox.worldPosition);
@@ -356,9 +354,6 @@ public class WorldGenerator : MonoBehaviour
                             float eval = -((distanceFromCenter / radius) - 1);
 
                             float result = exp.terrainFalloff.Evaluate(eval);
-                            //Debug.Log("result is " + result + "|| distance: " + distanceFromCenter);
-
-                            //vox.chunk.AlterTerrain(vox, isDigging, result * amount, false);
                             ChunkGrid[vox.index.x, vox.index.y, vox.index.z].AlterTerrain(vox, isDigging, result * amount, false);
                         }
                     }

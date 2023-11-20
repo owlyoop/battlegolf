@@ -25,6 +25,7 @@ public class GameManager : NetworkBehaviour
     public int NumStartingPawns = 4;
     public float TurnLengthInSeconds = 45;
 
+
     [Header("Current Match Data")]
     [SerializeField, SyncVar] List<BattlePlayer> players = new List<BattlePlayer>();
     public int TurnCounter = 1;
@@ -40,6 +41,10 @@ public class GameManager : NetworkBehaviour
     public Transform WorldCenterPoint;
     BattlegolfNetworkManager lobby;
     public WorldNetworkCalls WorldNetwork;
+    public Material TeamMaterial1;
+    public Material TeamMaterial2;
+    public Material TeamMaterial3;
+    public Material TeamMaterial4;
 
     [Header("Game Data")]
     public GameObject PlayerOverviewPrefab;

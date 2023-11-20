@@ -17,6 +17,7 @@ public class IngameHUD : MonoBehaviour
 
     public TextMeshProUGUI projectileForce;
     public TextMeshProUGUI projectileForceBar;
+    public TextMeshProUGUI timerText;
 
 
     private void Start()

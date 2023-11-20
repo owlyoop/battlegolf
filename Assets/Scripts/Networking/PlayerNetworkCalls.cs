@@ -32,7 +32,7 @@ public class PlayerNetworkCalls : NetworkBehaviour
 
             foreach(var p in lobby.GetPlayers())
             {
-                p.battlePlayer.Cam.SetFollowTransform(proj.CameraFollowPoint.transform);
+                //p.battlePlayer.Cam.SetFollowTransform(proj.CameraFollowPoint.transform);
             }
         }
     }

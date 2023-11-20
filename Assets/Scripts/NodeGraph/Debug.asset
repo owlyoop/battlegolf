@@ -1,0 +1,157 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-4519443507294665167
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6261d5383ba78764ab88e3fe9f2e16c4, type: 3}
+  m_Name: Level Terrain
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 760, y: -88}
+  ports:
+    keys:
+    - noiseValueInput
+    - noiseValueOutput
+    values:
+    - _fieldName: noiseValueInput
+      _node: {fileID: -4519443507294665167}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: noiseValue
+        node: {fileID: -4513972220819679678}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+    - _fieldName: noiseValueOutput
+      _node: {fileID: -4519443507294665167}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: finalNoiseValue
+        node: {fileID: -3071379420847539631}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  previewTex: {fileID: 0}
+  isPreviewDropdown: 1
+  previewTextureSize: 100
+  previewOffset: 8
+  previewDirection: 1
+  startRoofHeight: 28
+  startFloorHeight: 4
+  roofStrength: 1
+  floorStrength: 1
+  noiseValueInput: 0
+  noiseValueOutput: 0
+--- !u!114 &-4513972220819679678
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9ce231316066d44a818f381c2f086d2, type: 3}
+  m_Name: Simplex Noise
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 360, y: -120}
+  ports:
+    keys:
+    - noiseValue
+    values:
+    - _fieldName: noiseValue
+      _node: {fileID: -4513972220819679678}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: noiseValueInput
+        node: {fileID: -4519443507294665167}
+        reroutePoints: []
+      _direction: 1
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  previewTex: {fileID: 0}
+  isPreviewDropdown: 1
+  previewTextureSize: 100
+  previewOffset: 0
+  previewDirection: 0
+  noiseValue: 0
+  seed: 111
+  center: {x: 0, y: 0, z: 0}
+  isRidged: 0
+  strength: 1
+  numOctaves: 1
+  lacunarity: 1
+  persistance: 1
+  noiseScale: 0.1
+  ridgedAbsStrength: 1
+--- !u!114 &-3071379420847539631
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a01c2feb4cd0f1c49b41cb0d5cb56599, type: 3}
+  m_Name: World Gen End
+  m_EditorClassIdentifier: 
+  graph: {fileID: 11400000}
+  position: {x: 1096, y: -88}
+  ports:
+    keys:
+    - finalNoiseValue
+    values:
+    - _fieldName: finalNoiseValue
+      _node: {fileID: -3071379420847539631}
+      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
+        PublicKeyToken=b77a5c561934e089
+      connections:
+      - fieldName: noiseValueOutput
+        node: {fileID: -4519443507294665167}
+        reroutePoints: []
+      _direction: 0
+      _connectionType: 0
+      _typeConstraint: 0
+      _dynamic: 0
+  width: 8
+  length: 8
+  height: 3
+  surfaceLevel: 0
+  finalNoiseValue: -0.5
+  noiseNodes:
+  - {fileID: -4513972220819679678}
+  filterNodes: []
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e903208b7cd8d9b469cfd804ac1816eb, type: 3}
+  m_Name: Debug
+  m_EditorClassIdentifier: 
+  nodes:
+  - {fileID: -3071379420847539631}
+  - {fileID: -4513972220819679678}
+  - {fileID: -4519443507294665167}
+  endNode: {fileID: -3071379420847539631}
+  noiseGenPoint: {x: 128, y: 48, z: 128}

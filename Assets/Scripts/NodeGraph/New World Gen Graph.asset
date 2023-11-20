@@ -1,50 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &-7243798274439313400
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f9ce231316066d44a818f381c2f086d2, type: 3}
-  m_Name: Simplex Noise
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  position: {x: 1352, y: 680}
-  ports:
-    keys:
-    - noiseValue
-    values:
-    - _fieldName: noiseValue
-      _node: {fileID: -7243798274439313400}
-      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
-        PublicKeyToken=b77a5c561934e089
-      connections:
-      - fieldName: b
-        node: {fileID: 4158465570006224752}
-        reroutePoints: []
-      _direction: 1
-      _connectionType: 0
-      _typeConstraint: 0
-      _dynamic: 0
-  previewTex: {fileID: 0}
-  isPreviewDropdown: 1
-  previewTextureSize: 100
-  previewOffset: 0
-  previewDirection: 0
-  noiseValue: 0
-  seed: 222
-  center: {x: 0, y: 0, z: 0}
-  isRidged: 0
-  strength: 1
-  numOctaves: 3
-  lacunarity: 2.2
-  persistance: 0.25
-  noiseScale: 0.32
-  ridgedAbsStrength: 0.1
 --- !u!114 &-3071379420847539631
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -58,7 +13,7 @@ MonoBehaviour:
   m_Name: World Gen End
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 2024, y: 200}
+  position: {x: 1096, y: -88}
   ports:
     keys:
     - finalNoiseValue
@@ -81,111 +36,8 @@ MonoBehaviour:
   surfaceLevel: 0
   finalNoiseValue: 0
   noiseNodes:
-  - {fileID: 5804619211648430764}
-  - {fileID: -335168689841167415}
-  - {fileID: -7243798274439313400}
+  - {fileID: 0}
   filterNodes: []
---- !u!114 &-2887172756511314601
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5f8c4b7869b6abe468b721e8a4b98dda, type: 3}
-  m_Name: Domain Warp
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  position: {x: 1496, y: 184}
-  ports:
-    keys:
-    - noiseValueInput
-    - warpNoiseInput
-    - noiseValueOutput
-    values:
-    - _fieldName: noiseValueInput
-      _node: {fileID: -2887172756511314601}
-      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
-        PublicKeyToken=b77a5c561934e089
-      connections: []
-      _direction: 0
-      _connectionType: 0
-      _typeConstraint: 0
-      _dynamic: 0
-    - _fieldName: warpNoiseInput
-      _node: {fileID: -2887172756511314601}
-      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
-        PublicKeyToken=b77a5c561934e089
-      connections: []
-      _direction: 0
-      _connectionType: 0
-      _typeConstraint: 0
-      _dynamic: 0
-    - _fieldName: noiseValueOutput
-      _node: {fileID: -2887172756511314601}
-      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
-        PublicKeyToken=b77a5c561934e089
-      connections: []
-      _direction: 1
-      _connectionType: 0
-      _typeConstraint: 0
-      _dynamic: 0
-  previewTex: {fileID: 0}
-  isPreviewDropdown: 1
-  previewTextureSize: 100
-  previewOffset: 0
-  previewDirection: 0
-  noiseValueInput: 0
-  warpNoiseInput: 0
-  useWarpNoiseInput: 1
-  strength: 16
-  noiseValueOutput: 0
---- !u!114 &-335168689841167415
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0cbd6e07a82ebd34aa9ec6eac67313d6, type: 3}
-  m_Name: Worley Noise
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  position: {x: 888, y: 600}
-  ports:
-    keys:
-    - noiseValue
-    values:
-    - _fieldName: noiseValue
-      _node: {fileID: -335168689841167415}
-      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
-        PublicKeyToken=b77a5c561934e089
-      connections:
-      - fieldName: mask
-        node: {fileID: 4158465570006224752}
-        reroutePoints: []
-      _direction: 1
-      _connectionType: 0
-      _typeConstraint: 0
-      _dynamic: 0
-  previewTex: {fileID: 0}
-  isPreviewDropdown: 1
-  previewTextureSize: 100
-  previewOffset: 0
-  previewDirection: 0
-  noiseValue: 0
-  seed: 111
-  center: {x: 0, y: 0, z: 0}
-  distance: 0
-  combination: 1
-  solidCells: 0
-  jitter: 1
-  frequency: 0.04
-  amplitude: 2
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -201,136 +53,8 @@ MonoBehaviour:
   nodes:
   - {fileID: -3071379420847539631}
   - {fileID: 8732479998213866851}
-  - {fileID: 5804619211648430764}
-  - {fileID: -2887172756511314601}
-  - {fileID: -335168689841167415}
-  - {fileID: 4158465570006224752}
-  - {fileID: -7243798274439313400}
   endNode: {fileID: -3071379420847539631}
   noiseGenPoint: {x: 4, y: 47, z: 99}
---- !u!114 &4158465570006224752
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7d32405f52431c344a0a2f29e3ed7520, type: 3}
-  m_Name: Mask
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  position: {x: 1672, y: 520}
-  ports:
-    keys:
-    - a
-    - b
-    - mask
-    - noiseValue
-    values:
-    - _fieldName: a
-      _node: {fileID: 4158465570006224752}
-      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
-        PublicKeyToken=b77a5c561934e089
-      connections:
-      - fieldName: noiseValue
-        node: {fileID: 5804619211648430764}
-        reroutePoints: []
-      _direction: 0
-      _connectionType: 0
-      _typeConstraint: 0
-      _dynamic: 0
-    - _fieldName: b
-      _node: {fileID: 4158465570006224752}
-      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
-        PublicKeyToken=b77a5c561934e089
-      connections:
-      - fieldName: noiseValue
-        node: {fileID: -7243798274439313400}
-        reroutePoints: []
-      _direction: 0
-      _connectionType: 0
-      _typeConstraint: 0
-      _dynamic: 0
-    - _fieldName: mask
-      _node: {fileID: 4158465570006224752}
-      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
-        PublicKeyToken=b77a5c561934e089
-      connections:
-      - fieldName: noiseValue
-        node: {fileID: -335168689841167415}
-        reroutePoints: []
-      _direction: 0
-      _connectionType: 0
-      _typeConstraint: 0
-      _dynamic: 0
-    - _fieldName: noiseValue
-      _node: {fileID: 4158465570006224752}
-      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
-        PublicKeyToken=b77a5c561934e089
-      connections:
-      - fieldName: noiseValueInput
-        node: {fileID: 8732479998213866851}
-        reroutePoints: []
-      _direction: 1
-      _connectionType: 0
-      _typeConstraint: 0
-      _dynamic: 0
-  previewTex: {fileID: 0}
-  isPreviewDropdown: 1
-  previewTextureSize: 100
-  previewOffset: 0
-  previewDirection: 0
-  a: 0
-  b: 0
-  mask: 0
-  noiseValue: 0
---- !u!114 &5804619211648430764
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f9ce231316066d44a818f381c2f086d2, type: 3}
-  m_Name: Simplex Noise
-  m_EditorClassIdentifier: 
-  graph: {fileID: 11400000}
-  position: {x: 1128, y: 488}
-  ports:
-    keys:
-    - noiseValue
-    values:
-    - _fieldName: noiseValue
-      _node: {fileID: 5804619211648430764}
-      _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
-        PublicKeyToken=b77a5c561934e089
-      connections:
-      - fieldName: a
-        node: {fileID: 4158465570006224752}
-        reroutePoints: []
-      _direction: 1
-      _connectionType: 0
-      _typeConstraint: 0
-      _dynamic: 0
-  previewTex: {fileID: 0}
-  isPreviewDropdown: 1
-  previewTextureSize: 100
-  previewOffset: 4
-  previewDirection: 0
-  noiseValue: 0
-  seed: 222
-  center: {x: 4, y: 2, z: 441}
-  isRidged: 0
-  strength: 1
-  numOctaves: 2
-  lacunarity: 2
-  persistance: 0.25
-  noiseScale: 0.5
-  ridgedAbsStrength: 0.25
 --- !u!114 &8732479998213866851
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -344,7 +68,7 @@ MonoBehaviour:
   m_Name: Level Terrain
   m_EditorClassIdentifier: 
   graph: {fileID: 11400000}
-  position: {x: 1768, y: 168}
+  position: {x: 840, y: -136}
   ports:
     keys:
     - noiseValueInput
@@ -354,10 +78,7 @@ MonoBehaviour:
       _node: {fileID: 8732479998213866851}
       _typeQualifiedName: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
         PublicKeyToken=b77a5c561934e089
-      connections:
-      - fieldName: noiseValue
-        node: {fileID: 4158465570006224752}
-        reroutePoints: []
+      connections: []
       _direction: 0
       _connectionType: 0
       _typeConstraint: 0
@@ -380,8 +101,8 @@ MonoBehaviour:
   previewOffset: 4
   previewDirection: 1
   startRoofHeight: 16
-  startFloorHeight: 16
-  roofStrength: 1
-  floorStrength: 1
+  startFloorHeight: 8
+  roofStrength: 2
+  floorStrength: 2
   noiseValueInput: 0
   noiseValueOutput: 0

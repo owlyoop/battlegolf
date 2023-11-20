@@ -377,12 +377,19 @@ public class BattlegolfNetworkManager : NetworkManager
     /// This is invoked when a server is started - including when a host is started.
     /// <para>StartServer has multiple signatures, but they all cause this hook to be called.</para>
     /// </summary>
-    public override void OnStartServer() { }
+    public override void OnStartServer() 
+    {
+
+    }
 
     /// <summary>
     /// This is invoked when the client is started.
     /// </summary>
-    public override void OnStartClient() { }
+    public override void OnStartClient() 
+    {
+        if (SceneManager.GetActiveScene().name == "PawnTestingScene")
+            GameManager.GetInstance().InitializeWorld(numPlayers);
+    }
 
     /// <summary>
     /// This is called when a host is stopped.

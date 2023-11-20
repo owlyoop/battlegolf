@@ -193,6 +193,7 @@ MonoBehaviour:
   WepManager: {fileID: 0}
   Health: 100
   IsSelected: 0
+  meshrend: {fileID: 1741231428535338531}
   IdOfBattlePlayer: 0
 --- !u!114 &636109112457808826
 MonoBehaviour:

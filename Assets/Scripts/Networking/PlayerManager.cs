@@ -6,6 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+/// <summary>
+/// The network player object for the BattlegolfNetworkManager. For the player represented ingame, see "BattlePlayer"
+/// </summary>
 public class PlayerManager : NetworkBehaviour
 {
     public event System.Action<bool> OnPlayerReadyStatusChanged;
@@ -64,7 +67,8 @@ public class PlayerManager : NetworkBehaviour
 
     void OnPlayerNameChanged(string _, string newName)
     {
-        LobbyUI.instance.localPlayerName = PlayerName;
+        if(LobbyUI.instance != null)
+            LobbyUI.instance.localPlayerName = PlayerName;
     }
 
     #region Commands
@@ -128,11 +132,17 @@ public class PlayerManager : NetworkBehaviour
 
                 this.battlePlayer = bp.GetComponent<BattlePlayer>();
 
+                //TODO: this shouldnt be in a player start function
                 lobby.NumSpawnedPlayers++;
 
                 //Spawn the battleplayer's pawns
                 for (int i = 0; i < GameManager.instance.NumStartingPawns; i++)
                 {
+                    //TODO: make sure the worldgen has already created spawnpoints
+                    if (GameManager.instance.WorldGen.PawnSpawns.Count < GameManager.instance.NumStartingPawns)
+                    {
+                        GameManager.instance.WorldGen.GeneratePawnSpawnpoints(GameManager.instance.NumStartingPawns);
+                    }
                     GameObject go = Instantiate(lobby.GetPawnPrefab(),
                         GameManager.instance.WorldGen.PawnSpawns[i + ((lobby.NumSpawnedPlayers - 1) * GameManager.instance.NumStartingPawns)],
                         new Quaternion(0, 0, 0, 0));

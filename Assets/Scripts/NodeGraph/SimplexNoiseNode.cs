@@ -14,6 +14,9 @@ public class SimplexNoiseNode : NoiseGeneratorNode
     public float noiseScale = 0.1f;
     [Range(0, 2f)] public float ridgedAbsStrength = 1f;
 
+    float cachedVal;
+    bool hasCalculatedValue = false;
+
     // Use this for initialization
     protected override void Init()
     {
@@ -27,8 +30,6 @@ public class SimplexNoiseNode : NoiseGeneratorNode
 
     public override float Evaluate(Vector3 point)
     {
-        //if (noise == null)
-            //return 0;
         float currNoise = 0;
         float frequency = noiseScale / 20f;
         float amplitude = 1;
@@ -51,12 +52,16 @@ public class SimplexNoiseNode : NoiseGeneratorNode
 
 
         currNoise = Mathf.Clamp(currNoise, -1f, 1f);
+        cachedVal = currNoise * strength;
+        hasCalculatedValue = true;
         return currNoise * strength;
     }
 
 	// Return the correct value of an output port when requested
 	public override object GetValue(NodePort port)
     {
-        return Evaluate(worldGraph.noiseGenPoint);
+        //if (!hasCalculatedValue)
+            return Evaluate(worldGraph.noiseGenPoint);
+        //else return cachedVal;
     }
 }

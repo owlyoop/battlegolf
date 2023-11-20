@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Mirror;
+using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
@@ -29,21 +30,18 @@ public class Chunk : MonoBehaviour
     int width { get { return MarchingCubesData.ChunkWidth; } }
     int height { get { return MarchingCubesData.ChunkHeight; } }
 
-
-    List<Vector3> processedVertices = new List<Vector3>();
-
-    List<int> processedTriangles = new List<int>();
-
-    //List<Vertex> vertices = new List<Vertex>();
     int maxLength;
 
-    Vertex[] vertexCopy;
-    NativeArray<Vertex> vertices;
+    NativeArray<Vertex> vertexCopy;
+    NativeHashMap<int2, int> vertexMapCopy;
+    NativeList<Vector3> vertices;
+    NativeList<int> triangles;
     [ReadOnly]
     NativeArray<float> terMap;
     MarchingCubesJob marchingCubesJob;
 
-    Dictionary<int2, int> vertexMap;
+    List<Vector3> tempVerts = new List<Vector3>();
+    List<int> tempTris = new List<int>();
 
     public float[,,] TerrainMap;
 
@@ -58,11 +56,7 @@ public class Chunk : MonoBehaviour
     {
         TerrainMap = new float[width + 1, height + 1, width + 1];
 
-        vertexMap = new Dictionary<int2, int>();
-
         maxLength = MarchingCubesData.ChunkHeight * MarchingCubesData.ChunkWidth * MarchingCubesData.ChunkWidth * 15;
-
-        vertexCopy = new Vertex[maxLength];
 
         smoothTerrain = _smoothTerrain;
         flatShading = _flatShading;
@@ -101,8 +95,10 @@ public class Chunk : MonoBehaviour
     {
         ClearMeshData();
         
-        vertices = new NativeArray<Vertex>(maxLength, Allocator.TempJob);
-
+        vertices = new NativeList<Vector3>(maxLength, Allocator.TempJob);
+        triangles = new NativeList<int>(maxLength * 3, Allocator.TempJob);
+        vertexCopy = new NativeArray<Vertex>(maxLength, Allocator.TempJob);
+        vertexMapCopy = new NativeHashMap<int2, int>(maxLength, Allocator.TempJob);
         terMap = new NativeArray<float>((width + 1) * (height + 1) * (width + 1), Allocator.TempJob);
 
         for (int x = 0; x < width +1; x++)
@@ -122,80 +118,61 @@ public class Chunk : MonoBehaviour
         {
             numVoxelsHeight = height,
             numVoxelsWidth = width,
+            voxelsPerMeter = World.VoxelsPerMeter,
             surfaceLevel = World.SurfaceLevel,
             smoothTerrain = World.SmoothTerrain,
+            flatShading = World.FlatShading,
             VertexCountCounter = vertexCountCounter,
-            jobVertices = vertices,
+            processedVertices = vertices,
+            processedTriangles = triangles,
+            jobVertices = vertexCopy,
+            vertexMap = vertexMapCopy,
             terMap = terMap
         };
 
         JobHandle jobHandle = marchingCubesJob.Schedule();
 
-        //TODO: delete
-        //old code that doesnt use multithreading. keeping for reference just incase if i forget things
-        #region
-        //Look through each cube of terrain
-        /*for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                for (int z = 0; z < width; z++)
-                {
-                    //Float for each corner of a cube. get the value from our terrainmap
-                    float[] cube = new float[8];
-                    for (int i = 0; i < 8; i++)
-                    {
-                        cube[i] = terrainMap[x + MarchingCubesData.CornerTable[i].x, y + MarchingCubesData.CornerTable[i].y, z + MarchingCubesData.CornerTable[i].z];
-                    }
-
-                    //Pass value into MarchCube
-                    MarchCube(new Vector3Int(x,y,z), cube);
-                }
-            }
-        }*/
-        #endregion
-
         jobHandle.Complete();
 
         int vertexCount = marchingCubesJob.VertexCountCounter.Count;
 
-        vertices.CopyTo(vertexCopy);
+        BuildMesh();
+
         vertices.Dispose();
+        triangles.Dispose();
         terMap.Dispose();
+        vertexCopy.Dispose();
+        vertexMapCopy.Dispose();
         vertexCountCounter.Dispose();
 
-        BuildMeshData();
-        BuildMesh();
-        //BuildFloorUndersideMesh();
-
     }
-
-    private void OnDisable()
-    {
-        //TODO: delete. not needed with the jobs
-        //vertices.Dispose();
-        //terMap.Dispose();
-    }
-
     void ClearMeshData()
     {
-        vertexMap.Clear();
-        processedVertices.Clear();
-        processedTriangles.Clear();
         if (mesh != null) mesh.Clear();
     }
 
     void BuildMesh()
     {
+        for (int v = 0; v < vertices.Length; v++)
+            tempVerts.Add(vertices[v]);
+
+        for (int t = 0; t < triangles.Length; t++)
+            tempTris.Add(triangles[t]);
+
+
         mesh.MarkDynamic();
 
-        mesh.SetVertices(processedVertices);
-        mesh.SetTriangles(processedTriangles,0,false);
+        mesh.SetVertices(tempVerts);
+        mesh.SetTriangles(tempTris,0,false);
         mesh.RecalculateNormals();
         meshFilter.mesh = mesh;
-        if (processedVertices.Count >= 3)
+        if (tempVerts.Count >= 3)
             meshCollider.sharedMesh = mesh;
+           
         backsideMesh.mesh = mesh;
+
+        tempVerts.Clear();
+        tempTris.Clear();
     }
 
     /// <summary>
@@ -214,28 +191,21 @@ public class Chunk : MonoBehaviour
                         , y + ChunkPosition.y * World.VoxelsPerMeter
                         , z + ChunkPosition.z * World.VoxelsPerMeter));
 
+                    /*var point = new Vector3(x + ChunkPosition.x * World.VoxelsPerMeter
+                        , y + ChunkPosition.y * World.VoxelsPerMeter
+                        , z + ChunkPosition.z * World.VoxelsPerMeter);
+
+                    thisPoint = Noise.Evaluate(point * 0.025f);*/
+
+
                     TerrainMap[x, y, z] = thisPoint;
                 }
             }
         }
-        #region
-        /*float[,,] map = world.worldGraph.endNode.GenerateFinalTerrainMap();
-        for (int x = 0; x < width + 1; x++)
-        {
-            for (int z = 0; z < width + 1; z++)
-            {
-                for (int y = 0; y < height + 1; y++)
-                {
-                    terrainMap[x, y, z] = map[x + (int)chunkPosition.x
-                        , y + (int)chunkPosition.y
-                        , z + (int)chunkPosition.z];
-                }
-            }
-        }*/
-        #endregion
     }
 
     //TODO: look into the job system for generating the terrain map with xnode. Check if that's even a performance impact
+    // uhhhh. major slowdowns are xnode ports and TryGetValue in BuildMeshData
     public struct BuildTerrainMapJob : IJobParallelFor
     {
         float thisPoint;
@@ -400,143 +370,7 @@ public class Chunk : MonoBehaviour
         }
     }
 
-    /*
-    /// <summary>
-    /// Raises or Digs the terrain at a single point. Will check if the point is on the chunk border
-    /// </summary>
-    /// <param name="isDigging"></param>
-    /// <param name="pos"> Global position </param>
-    /// <param name="updateMesh">Update the mesh after altering the terrain map value. If false, chunk will be marked as dirty</param>
-    public void AlterTerrain(Vector3 pos, bool isDigging, float amount, bool updateMesh)
-    {
-        float newTerrainValue;
-        if (isDigging)
-            newTerrainValue = -amount;
-        else newTerrainValue = amount;
-
-        var worldPos = pos;
-
-        pos -= chunkPosition;
-        Vector3Int tMap = new Vector3Int((int)Mathf.Round(pos.x * world.voxelsPerMeter), (int)Mathf.Round(pos.y * world.voxelsPerMeter), (int)Mathf.Round(pos.z * world.voxelsPerMeter));
-
-        int mapXLength = terrainMap.GetLength(0);
-        int mapYHeight = terrainMap.GetLength(1);
-        int mapZLength = terrainMap.GetLength(2);
-
-        //Debug.Log(chunkObject.name + " altered at " + tMap.x.ToString() + " " + tMap.y.ToString() + " " + tMap.z.ToString());
-        terrainMap[tMap.x, tMap.y, tMap.z] += newTerrainValue;
-
-
-        float worldX = chunkPosition.x;
-        float worldY = chunkPosition.y;
-        float worldZ = chunkPosition.z;
-
-
-        //if the point is on an end face, 1 extra chunk has to be updated (not including original chunk)
-        //if on edge, 3 extra
-        //if on corner, 7 extra
-
-        int border = 0;
-        int xValue = -1;
-        int yValue = -1;
-        int zValue = -1;
-
-        if (tMap.x == 0)
-        {
-            worldX = chunkPosition.x - (MarchingCubesData.ChunkWidth / world.voxelsPerMeter);
-            border++;
-            xValue = MarchingCubesData.ChunkWidth;
-        }
-        else if (tMap.x == mapXLength - 1)
-        {
-            worldX = chunkPosition.x + (MarchingCubesData.ChunkWidth / world.voxelsPerMeter);
-            border++;
-            xValue = 0;
-        }
-
-        if (tMap.y == 0)
-        {
-            worldY = chunkPosition.y - (MarchingCubesData.ChunkHeight / world.voxelsPerMeter);
-            border++;
-            yValue = MarchingCubesData.ChunkHeight;
-        }
-        else if (tMap.y == mapYHeight - 1)
-        {
-            worldY = chunkPosition.y + (MarchingCubesData.ChunkHeight / world.voxelsPerMeter);
-            border++;
-            yValue = 0;
-        }
-
-        if (tMap.z == 0)
-        {
-            worldZ = chunkPosition.z - (MarchingCubesData.ChunkWidth / world.voxelsPerMeter);
-            border++;
-            zValue = MarchingCubesData.ChunkWidth;
-        }
-        else if (tMap.z == mapZLength - 1)
-        {
-            worldZ = chunkPosition.z + (MarchingCubesData.ChunkWidth / world.voxelsPerMeter);
-            border++;
-            zValue = 0;
-        }
-
-        if (border != 0)
-        {
-            if (border == 1)    //faces. 2 chunks should be altered (1 + the original)
-            {
-                if (xValue != -1)
-                {
-                    AlterBorderChunk(new Vector3(worldX, chunkPosition.y, chunkPosition.z), xValue, tMap.y, tMap.z, newTerrainValue, updateMesh);
-                }
-                else if (yValue != -1)
-                {
-                    AlterBorderChunk(new Vector3(chunkPosition.x, worldY, chunkPosition.z), tMap.x, yValue, tMap.z, newTerrainValue, updateMesh);
-                }
-                else if (zValue != -1)
-                {
-                    AlterBorderChunk(new Vector3(chunkPosition.x, chunkPosition.y, worldZ), tMap.x, tMap.y, zValue, newTerrainValue, updateMesh);
-                }
-                
-            }
-            else if (border == 2)   //edges. 4 chunks should be altered (3 + the original)
-            {
-                if (xValue == -1)
-                {
-                    AlterBorderChunk(new Vector3(worldX, worldY, worldZ), tMap.x, yValue ,zValue, newTerrainValue, updateMesh);
-                    AlterBorderChunk(new Vector3(worldX, chunkPosition.y, worldZ), tMap.x, tMap.y, zValue, newTerrainValue, updateMesh);
-                    AlterBorderChunk(new Vector3(worldX, worldY, chunkPosition.z), tMap.x, yValue, tMap.z, newTerrainValue, updateMesh);
-                }
-                else if (yValue == -1)
-                {
-                    AlterBorderChunk(new Vector3(worldX, worldY, worldZ), xValue, tMap.y, zValue, newTerrainValue, updateMesh);
-                    AlterBorderChunk(new Vector3(chunkPosition.x, worldY, worldZ), tMap.x, tMap.y, zValue, newTerrainValue, updateMesh);
-                    AlterBorderChunk(new Vector3(worldX, worldY, chunkPosition.z), xValue, tMap.y, tMap.z, newTerrainValue, updateMesh);
-                }
-                else if (zValue == -1)
-                {
-                    AlterBorderChunk(new Vector3(worldX, worldY, worldZ), xValue, yValue, tMap.z, newTerrainValue, updateMesh);
-                    AlterBorderChunk(new Vector3(chunkPosition.x, worldY, worldZ), tMap.x, yValue, tMap.z, newTerrainValue, updateMesh);
-                    AlterBorderChunk(new Vector3(worldX, chunkPosition.y, worldZ), xValue, tMap.y, tMap.z, newTerrainValue, updateMesh);
-                }
-            }
-            else if (border == 3)   //corners. 8 chunks should be altered (7 + the original)
-            {
-                AlterBorderChunk(new Vector3(worldX, worldY, worldZ),xValue, yValue, zValue, newTerrainValue, updateMesh);
-
-                AlterBorderChunk(new Vector3(chunkPosition.x, worldY, worldZ), tMap.x, yValue, zValue, newTerrainValue, updateMesh);
-                AlterBorderChunk(new Vector3(worldX, chunkPosition.y, worldZ), xValue, tMap.y, zValue, newTerrainValue, updateMesh);
-                AlterBorderChunk(new Vector3(worldX, worldY, chunkPosition.z), xValue, yValue, tMap.z, newTerrainValue, updateMesh);
-
-                AlterBorderChunk(new Vector3(chunkPosition.x, chunkPosition.y, worldZ), tMap.x, tMap.y, zValue, newTerrainValue, updateMesh);
-                AlterBorderChunk(new Vector3(chunkPosition.x, worldY, chunkPosition.z), tMap.x, yValue, tMap.z, newTerrainValue, updateMesh);
-                AlterBorderChunk(new Vector3(worldX, chunkPosition.y, chunkPosition.z), xValue, tMap.y, tMap.z, newTerrainValue, updateMesh);
-
-            }
-        }
-
-        CreateMeshData();
-    }*/
-
+   
     //TODO: test if it even works
     public float GetTerrainMapValueFromWorldPos(Vector3 pos)
     {
@@ -546,82 +380,8 @@ public class Chunk : MonoBehaviour
         return TerrainMap[tMap.x, tMap.y, tMap.z];
     }
 
-    //TODO: Delete this but save it somewhere for reference
-    //Old marching cubes function. New one uses the job system.
-    void MarchCube(Vector3Int position, float[] cube)
-    {
-        int configIndex = GetCubeConfig(cube);
-
-        //These 2 configs means that the cube has no triangles
-        if (configIndex == 0 || configIndex == 255)
-            return;
-
-        //Loop through the triangles. Never more than 5 triangles to a cube and only 3 vertices per triangle
-        int edgeIndex = 0;
-
-        for (int t = 0; t < 5; t++)
-        {
-            for (int v = 0; v < 3; v++)
-            {
-                //Get current indice. Increment triangle index each loop
-                int indice = MarchingCubesData.TriangleTable[configIndex, edgeIndex];
-
-                //If the indice is -1, that means no more indices for that config and we can exit
-                if (indice == -1)
-                    return;
-
-                //Get the vertices for the start and end of the edge
-                Vector3Int vert1 = position + MarchingCubesData.CornerTable[MarchingCubesData.EdgeIndexes[indice, 0]];
-                Vector3Int vert2 = position + MarchingCubesData.CornerTable[MarchingCubesData.EdgeIndexes[indice, 1]];
-
-                Vector3 vertPosition;
-                
-                if (smoothTerrain)
-                {
-                    //Get terrain values at each end of edge, then interpolate the vert point on the edge
-                    float vert1Sample = cube[MarchingCubesData.EdgeIndexes[indice, 0]];
-                    float vert2Sample = cube[MarchingCubesData.EdgeIndexes[indice, 1]];
-
-                    float difference = vert2Sample - vert1Sample;
-
-                    if (difference == 0)
-                        difference = World.SurfaceLevel;
-                    else
-                        difference = (World.SurfaceLevel - vert1Sample) / difference;
-
-                    vertPosition = vert1 + ((Vector3)(vert2 - vert1) * difference);
-
-                }
-                else
-                {
-                    //midpoint of edge
-                    vertPosition = (Vector3)(vert1 + vert2) / 2f;
-                }
-
-                
-                Vertex vert = new Vertex();
-                vert.position = vertPosition;
-                var indexA = indexFromCoord(vert1);
-                var indexB = indexFromCoord(vert2);
-                vert.edgeID = new int2(Mathf.Min(indexA, indexB), Mathf.Max(indexA, indexB));
-                //vertices.Add(vert);
-
-                /*if (flatShading)
-                {
-                    processedVertices.Add(vertPosition/world.voxelsPerMeter);
-                    processedTriangles.Add(processedVertices.Count - 1);
-                }
-                else
-                {
-                    processedTriangles.Add(VertForIndice(vertPosition/world.voxelsPerMeter));
-                }*/
-                edgeIndex++;
-            }
-        }
-    }
-
     //This is slow if I want to update the terrain mesh every frame. TODO: Use jobs(?)
-    void BuildMeshData()
+    /*void BuildMeshData()
     {
         int triIndex = 0;
 
@@ -629,6 +389,7 @@ public class Chunk : MonoBehaviour
         {
             int sharedIndex;
 
+            //This is slow
             if (!flatShading && vertexMap.TryGetValue(vertexCopy[i].edgeID, out sharedIndex))
             {
                 processedTriangles.Add(sharedIndex);
@@ -645,9 +406,9 @@ public class Chunk : MonoBehaviour
             }
         }
         
-    }
+    }*/
 
-    int indexFromCoord(Vector3Int coord)
+    /*int indexFromCoord(Vector3Int coord)
     {
         coord = coord - (ChunkGridPosition * 17);
         return coord.z * 17 * 17 + coord.y * 17 + coord.x;
@@ -678,6 +439,6 @@ public class Chunk : MonoBehaviour
         }
 
         return index;
-    }
+    }*/
 
 }

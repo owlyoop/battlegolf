@@ -4,7 +4,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-//Pawns represent little controllable characters in the game world. They do not represent the player. A player can control multiple pawns.
+/// <summary>
+/// Pawns represent little controllable characters in the game world. Owned by the "BattlePlayer" 
+/// They do not represent the BattlePlayer. A BattlePlayer can control multiple pawns.
+/// </summary>
+
 public class Pawn : NetworkBehaviour
 {
     public enum InputState
@@ -28,6 +32,9 @@ public class Pawn : NetworkBehaviour
     public float Health = 100f;
 
     public bool IsSelected;
+
+    [SerializeField]
+    MeshRenderer meshrend;
 
     [SyncVar]
     public uint IdOfBattlePlayer;

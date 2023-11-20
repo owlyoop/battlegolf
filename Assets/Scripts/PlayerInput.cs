@@ -321,7 +321,7 @@ public class PlayerInput : NetworkBehaviour
             Ray ray = new Ray(cam.transform.position, cam.transform.forward);
             if (Physics.Raycast(ray, out RaycastHit hit, 1000f))
             {
-                worldGen.AlterTerrainRadius(hit.point, false, 0.024f, 5f, ExplosionPrefab);
+                worldGen.AlterTerrainRadius(hit.point, false, 0.024f, 4f, ExplosionPrefab);
             }
         }
     }

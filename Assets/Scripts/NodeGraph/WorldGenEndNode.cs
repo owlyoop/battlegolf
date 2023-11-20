@@ -88,16 +88,6 @@ public class WorldGenEndNode : Node
         return GetInputValue<float>("finalNoiseValue");
     }
 
-    /*public float[,,] GenerateFinalTerrainMap()
-    {
-
-        TerrainMap t = GetInputValue<TerrainMap>("finalTerrainMap", this.finalTerrainMap);
-        t.Initialize(worldGraph);
-        float[,,] tMap = new float[t.GetLength(0), t.GetLength(1), t.GetLength(2)];
-        tMap = finalTerrainMap.GetTerrainMap();
-        return tMap;
-    }*/
-
 	// Return the correct value of an output port when requested
 	public override object GetValue(NodePort port)
     {

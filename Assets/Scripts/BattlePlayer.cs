@@ -4,6 +4,9 @@ using UnityEngine;
 using Mirror;
 using System;
 
+/// <summary>
+/// The player represented ingame. For the player represented in the network, see "PlayerManager".
+/// </summary>
 public class BattlePlayer : NetworkBehaviour
 {
     public string playerName;
