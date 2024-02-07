@@ -19,6 +19,9 @@ public class ProjectileLauncher : WeaponMotor
     public AnimationCurve PowerBar;
     public AnimationCurve CurveBar;
 
+    private RectTransform powerBar;
+    private float barHeight = 512;
+
     public enum WeaponState
     {
         Disabled,
@@ -31,6 +34,8 @@ public class ProjectileLauncher : WeaponMotor
     private void Start()
     {
         wepState = WeaponState.WaitingForPrimaryFire;
+        powerBar = shooter.Owner.UI.FilledPowerBar;
+        barHeight = shooter.Owner.UI.PowerBarPanel.sizeDelta.y;
     }
 
     //TODO: remake this
@@ -52,12 +57,14 @@ public class ProjectileLauncher : WeaponMotor
             if (forceIncreasing)
             {
                 projForce += powerRate * t;
+                powerBar.sizeDelta = new Vector2(shooter.Owner.UI.FilledPowerBar.sizeDelta.x, barHeight * (projForce / 100f));
                 if (projForce > 100)
                     forceIncreasing = false;
             }
             else if (!forceIncreasing)
             {
                 projForce -= powerRate * t;
+                powerBar.sizeDelta = new Vector2(shooter.Owner.UI.FilledPowerBar.sizeDelta.x, barHeight * (projForce / 100f));
                 if (projForce <= 0)
                     forceIncreasing = true;
             }

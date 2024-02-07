@@ -313,6 +313,8 @@ MonoBehaviour:
   weaponIconPrefab: {fileID: 3156582737470482138, guid: 411784fc3b77d0049ba86922324be922, type: 3}
   teamHealthbarPrefab: {fileID: 3913394663551448729, guid: 58c66b6892352824393b536f7abfa0ed, type: 3}
   projectileLauncherHUD: {fileID: 1129441073091925077}
+  FilledPowerBar: {fileID: 5214420172260910606}
+  PowerBarPanel: {fileID: 1129441073766788019}
 --- !u!223 &1129441073312529127
 Canvas:
   m_ObjectHideFlags: 0
@@ -1791,6 +1793,7 @@ MonoBehaviour:
   worldOverviewText: {fileID: 4460520134076716709}
   projectileForce: {fileID: 3058150230602101639}
   projectileForceBar: {fileID: 0}
+  timerText: {fileID: 0}
 --- !u!1 &2409670902186395552
 GameObject:
   m_ObjectHideFlags: 0

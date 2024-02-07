@@ -21,7 +21,8 @@ public class UIManager : MonoBehaviour
     public GameObject teamHealthbarPrefab;
     public GameObject projectileLauncherHUD;
 
-    
+    public RectTransform FilledPowerBar;
+    public RectTransform PowerBarPanel;
 
 
     private void Start()
