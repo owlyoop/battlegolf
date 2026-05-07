@@ -1,9 +1,6 @@
 A Unity3D protoype game that implements the Marching Cubes algorithm for 3D terrain deformation, similar to the Worms series of games. The project utilizes Unity3D's multi-threaded Job System to support realtime continous terrain updates at an acceptable FPS.
 
-<video width="100%" height="auto" controls>
-  <source src="video1.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+[demo1.webm](https://github.com/user-attachments/assets/4d08c832-4dfc-4671-89f1-0991265efe46)
 
 The project also uses the plugin xNode for a visual node graph system to combine various noise inputs and filters for terrain generation presets.
 
